@@ -13,9 +13,12 @@ const symbols = src.slice(symbolsStart, src.indexOf('</svg>\n\n<header') + 6);
 
 // Pull the inner .screen of every shot, keyed by shot id
 const views = [];
+const order = [];
 const START = '<div class="shot" id="';
 for (let i = src.indexOf(START); i >= 0; i = src.indexOf(START, i + 1)) {
   const id = src.slice(i + START.length, src.indexOf('"', i + START.length));
+  const lab = src.slice(i, src.indexOf('</div>', src.indexOf('<div class="label">', i)));
+  order.push({ id: id, title: lab.replace(/<[^>]+>/g, ' ').replace(/^\s*\d+\s*/, '').replace(/\s+/g, ' ').trim() });
   const sStart = src.indexOf('<div class="screen"', i);
   // walk divs to find the matching close of .screen
   let depth = 0, j = sStart;
@@ -60,7 +63,15 @@ body{padding:0;margin:0;overflow:hidden;background:#0d1411;-webkit-tap-highlight
 .view.back{animation:inb .22s ease}
 @keyframes inb{from{opacity:.4;transform:translateX(-12px)}to{opacity:1;transform:none}}
 [data-go],.chip,.toggle,.seg div,.card,.listrow{cursor:pointer}
-.hint{position:fixed;left:0;right:0;bottom:14px;text-align:center;color:#93a39a;font:500 12px Inter,sans-serif}
+.pager{position:fixed;left:0;right:0;bottom:12px;display:flex;align-items:center;justify-content:center;gap:14px;font:500 13px Inter,sans-serif;color:#cfe0d6}
+.pager button{width:44px;height:44px;border-radius:50%;border:0;background:#1e9e5a;color:#fff;font-size:22px;line-height:1;cursor:pointer;display:grid;place-items:center}
+.pager button:disabled{background:#2a3a32;color:#5b6b62;cursor:default}
+.pager .t{min-width:260px;text-align:center}
+.pager .t b{color:#fff}
+.pager .k{display:block;font-size:11px;color:#93a39a;margin-top:2px}
+.toast{position:fixed;left:50%;top:14px;transform:translate(-50%,-30px);opacity:0;background:rgba(18,32,26,.9);color:#fff;font:600 12px Inter,sans-serif;padding:7px 12px;border-radius:99px;transition:.25s;z-index:99;pointer-events:none;white-space:nowrap}
+.toast.on{transform:translate(-50%,0);opacity:1}
+@media (min-width:601px){.toast{display:none}}
 /* Full-screen on phones: drop the frame and fake status bar/notch */
 @media (max-width:600px){
   body{background:var(--bg)}
@@ -69,7 +80,7 @@ body{padding:0;margin:0;overflow:hidden;background:#0d1411;-webkit-tap-highlight
   .notch{display:none}
   .status{height:max(10px, env(safe-area-inset-top));padding:0;font-size:0}
   .status *{display:none}
-  .hint{display:none}
+  .pager{display:none}
 }
 </style>
 </head>
@@ -78,8 +89,10 @@ ${symbols}
 <div class="app"><div class="device">
 ${views.join('\n')}
 </div></div>
-<div class="hint">ParkGo prototype · open this link on your phone for the full-screen app</div>
+<div class="pager"><button id="prev" aria-label="Previous screen">‹</button><div class="t"><span id="ptitle"></span><span class="k">← → keys or mouse wheel · open on your phone for full screen</span></div><button id="next" aria-label="Next screen">›</button></div>
+<div class="toast" id="toast"></div>
 <script>
+var ORDER = ${JSON.stringify(order)};
 (function () {
   // Scale the 300px-wide design to the phone width (or a comfortable size on desktop)
   // The screens are designed at 282px wide; scale them to fit the real screen
@@ -90,10 +103,10 @@ ${views.join('\n')}
       d.style.width = (W / z) + 'px'; d.style.height = (H / z) + 'px';
       d.style.transform = 'scale(' + z + ')'; d.style.left = '0px'; d.style.top = '0px';
     } else {
-      var z2 = Math.min((H - 70) / 620, 1.25);
+      var z2 = Math.min((H - 100) / 620, 1.25);
       d.style.width = '300px'; d.style.height = '620px';
       d.style.transform = 'scale(' + z2 + ')';
-      d.style.left = ((W - 300 * z2) / 2) + 'px'; d.style.top = Math.max((H - 620 * z2) / 2 - 12, 8) + 'px';
+      d.style.left = ((W - 300 * z2) / 2) + 'px'; d.style.top = Math.max((H - 620 * z2) / 2 - 30, 8) + 'px';
     }
   }
   fit(); addEventListener('resize', fit);
@@ -107,8 +120,48 @@ ${views.join('\n')}
     if (cur) cur.classList.remove('on', 'back');
     next.classList.add('on');
     next.classList.toggle('back', !!isBack);
+    updatePager(id);
     return true;
   }
+  var toastTimer;
+  function indexOf(id) { for (var k = 0; k < ORDER.length; k++) if (ORDER[k].id === id) return k; return -1; }
+  function updatePager(id) {
+    var k = indexOf(id), label = (k + 1) + ' / ' + ORDER.length + ' · ' + ORDER[k].title;
+    document.getElementById('ptitle').innerHTML = '<b>' + (k + 1) + ' / ' + ORDER.length + '</b> · ' + ORDER[k].title;
+    document.getElementById('prev').disabled = k <= 0;
+    document.getElementById('next').disabled = k >= ORDER.length - 1;
+    var t = document.getElementById('toast');
+    t.textContent = label; t.classList.add('on');
+    clearTimeout(toastTimer); toastTimer = setTimeout(function () { t.classList.remove('on'); }, 1300);
+  }
+  function step(d) {
+    var cur = document.querySelector('.view.on');
+    var k = indexOf(cur.id.slice(2)) + d;
+    if (k < 0 || k >= ORDER.length) return;
+    stack = [ORDER[k].id];
+    show(ORDER[k].id, d < 0);
+    history.replaceState({ id: ORDER[k].id }, '', '#' + ORDER[k].id);
+  }
+  document.getElementById('prev').onclick = function () { step(-1); };
+  document.getElementById('next').onclick = function () { step(1); };
+  addEventListener('keydown', function (e) {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === 'PageDown') { e.preventDefault(); step(1); }
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowUp' || e.key === 'PageUp') { e.preventDefault(); step(-1); }
+  });
+  var wheelLock = 0;
+  addEventListener('wheel', function (e) {
+    var now = Date.now();
+    if (now < wheelLock || Math.abs(e.deltaY) < 20) return;
+    wheelLock = now + 500;
+    step(e.deltaY > 0 ? 1 : -1);
+  }, { passive: true });
+  // Swipe left / right on a phone
+  var sx = 0, sy = 0;
+  addEventListener('touchstart', function (e) { sx = e.touches[0].clientX; sy = e.touches[0].clientY; }, { passive: true });
+  addEventListener('touchend', function (e) {
+    var dx = e.changedTouches[0].clientX - sx, dy = e.changedTouches[0].clientY - sy;
+    if (Math.abs(dx) > 70 && Math.abs(dy) < 50) step(dx < 0 ? 1 : -1);
+  }, { passive: true });
   function go(id) {
     var cur = document.querySelector('.view.on');
     var curId = cur && cur.id.slice(2);
