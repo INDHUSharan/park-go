@@ -1,0 +1,940 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#1e9e5a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="ParkGo">
+<title>ParkGo</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+
+:root{
+  --page:#eef2ef; --page-ink:#14211a; --page-muted:#5b6b62; --frame:#0d1411;
+  --brand:#1e9e5a; --brand-d:#167a45; --brand-l:#e6f5ec; --brand-xl:#f3faf6;
+  --paid:#f2a516; --paid-l:#fff5de; --paid-ink:#9a6200;
+  --danger:#e5484d; --danger-l:#fdecec; --info:#2d6cdf; --info-l:#e8f0fd;
+  --ink:#12201a; --muted:#68766e; --line:#e3e8e5; --bg:#f5f7f6; --card:#fff;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--page:#0b110e;--page-ink:#e6eee9;--page-muted:#93a39a;--frame:#000}}
+:root[data-theme="dark"]{--page:#0b110e;--page-ink:#e6eee9;--page-muted:#93a39a;--frame:#000}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Inter,system-ui,sans-serif;background:var(--page);color:var(--page-ink);padding:32px 16px 64px}
+header.top{max-width:1240px;margin:0 auto}
+header.top h1{font-size:28px;font-weight:800;letter-spacing:-.02em}
+header.top p{color:var(--page-muted);margin-top:6px;font-size:15px;max-width:760px;line-height:1.55}
+.legend{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.legend span{font-size:12px;font-weight:600;padding:6px 10px;border-radius:99px;background:color-mix(in srgb,var(--page-muted) 14%,transparent)}
+.flow{max-width:1240px;margin:40px auto 0}
+.flow h2{font-size:13px;text-transform:uppercase;letter-spacing:.12em;color:var(--page-muted);font-weight:700;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid color-mix(in srgb,var(--page-muted) 30%,transparent)}
+.flow p.desc{color:var(--page-muted);font-size:14px;margin:-6px 0 18px;line-height:1.5}
+.journey{max-width:1240px;margin:22px auto 0;padding:16px;border-radius:16px;background:color-mix(in srgb,var(--page-muted) 10%,transparent)}
+.journey .jt{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--page-muted);margin-bottom:8px}
+.jrow{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.step{display:inline-flex;align-items:center;gap:8px;padding:8px 14px 8px 8px;border-radius:99px;background:var(--brand);color:#fff;font-weight:600;font-size:13px;cursor:pointer;text-decoration:none}
+.step b{width:22px;height:22px;border-radius:50%;background:#fff;color:var(--brand-d);display:grid;place-items:center;font-size:12px}
+.step.alt{background:transparent;color:var(--page-ink);border:1px solid color-mix(in srgb,var(--page-muted) 40%,transparent);padding:8px 14px}
+.arrow{color:var(--page-muted);font-weight:700}
+.row{display:flex;flex-wrap:wrap;gap:32px}
+.shot{display:flex;flex-direction:column;gap:8px;align-items:center;max-width:100%}
+.label{font-size:13px;font-weight:600;color:var(--page-muted)}
+.label b{color:var(--page-ink)}
+.branch{font-size:11px;color:var(--page-muted);display:flex;gap:6px;flex-wrap:wrap;justify-content:center;max-width:300px}
+.branch a{color:var(--brand);font-weight:700;cursor:pointer;text-decoration:underline}
+.phone{width:300px;max-width:100%;height:620px;border-radius:40px;background:var(--frame);padding:9px;box-shadow:0 20px 40px -18px rgba(10,30,20,.45);transition:box-shadow .3s,transform .3s}
+.phone.flash{box-shadow:0 0 0 4px var(--brand),0 20px 40px -18px rgba(10,30,20,.45);transform:translateY(-4px)}
+.screen{position:relative;width:100%;height:100%;border-radius:32px;overflow:hidden;background:var(--bg);color:var(--ink);display:flex;flex-direction:column;font-size:13px}
+.status{height:34px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 22px 0 26px;font-size:12px;font-weight:600;position:relative;z-index:5}
+.status .r{display:flex;gap:5px;align-items:center}
+.status .r i{display:block;background:currentColor;border-radius:2px}
+.notch{position:absolute;top:8px;left:50%;transform:translateX(-50%);width:84px;height:22px;background:#000;border-radius:14px;z-index:6}
+.body{flex:1;overflow:hidden;padding:4px 18px 18px;display:flex;flex-direction:column;gap:12px}
+.svg{width:18px;height:18px;flex:none;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.sm{width:14px;height:14px}
+.lg{width:24px;height:24px}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;height:46px;border-radius:14px;background:var(--brand);color:#fff;font-weight:600;font-size:14px;border:0;cursor:pointer;width:100%;font-family:inherit}
+.btn:hover{background:var(--brand-d)}
+.btn.ghost{background:var(--brand-l);color:var(--brand-d)}
+.btn.line{background:#fff;color:var(--ink);border:1px solid var(--line)}
+.btn.dark{background:#000}
+.btn.sm{height:34px;font-size:12px;border-radius:10px;padding:0 12px}
+.iconbtn{width:38px;height:38px;border-radius:12px;background:#fff;border:1px solid var(--line);display:grid;place-items:center;flex:none;cursor:pointer}
+.navbar{display:flex;align-items:center;gap:10px;min-height:38px}
+.navbar h3{font-size:16px;font-weight:700;flex:1}
+.field{display:flex;align-items:center;gap:10px;height:46px;border:1px solid var(--line);background:#fff;border-radius:14px;padding:0 14px;color:var(--muted)}
+.field.on{border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-l);color:var(--ink)}
+.field span{flex:1;color:var(--ink)}
+.field span.ph{color:#a2ada7}
+.lbl{font-size:12px;font-weight:600;margin-bottom:6px}
+.card{background:var(--card);border-radius:16px;border:1px solid var(--line);padding:12px}
+.muted{color:var(--muted)}
+.tiny{font-size:11px}
+.b{font-weight:700}
+.h1{font-size:22px;font-weight:800;letter-spacing:-.02em;line-height:1.2}
+.h2{font-size:17px;font-weight:700}
+.flex{display:flex;align-items:center;gap:8px}
+.between{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.col{display:flex;flex-direction:column;gap:8px}
+.grow{flex:1;min-width:0}
+.center{text-align:center}
+.cap{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.07em;text-transform:uppercase}
+.chip{display:inline-flex;align-items:center;gap:5px;height:30px;padding:0 12px;border-radius:99px;background:#fff;border:1px solid var(--line);font-size:12px;font-weight:600;white-space:nowrap}
+.chip.on{background:var(--brand);color:#fff;border-color:var(--brand)}
+.chips{display:flex;gap:6px;overflow:hidden}
+.tag{display:inline-flex;align-items:center;gap:4px;padding:3px 7px;border-radius:6px;font-size:10px;font-weight:700;background:var(--brand-l);color:var(--brand-d);white-space:nowrap}
+.tag.paid{background:var(--paid-l);color:var(--paid-ink)}
+.tag.bad{background:var(--danger-l);color:var(--danger)}
+.tag.type{background:var(--info-l);color:var(--info)}
+.tag.grey{background:#eef1ef;color:var(--muted)}
+.logo{width:42px;height:42px;border-radius:12px;background:var(--brand);color:#fff;display:grid;place-items:center;font-weight:800;font-size:20px;flex:none}
+.thumb{width:60px;height:60px;border-radius:12px;flex:none;background:linear-gradient(135deg,#bfe3cd,#4fb07a);position:relative;overflow:hidden}
+.thumb::after{content:"P";position:absolute;inset:0;display:grid;place-items:center;color:#fff;font-weight:800;font-size:22px;opacity:.9}
+.thumb.y{background:linear-gradient(135deg,#ffe2a3,#f2a516)}
+.thumb.b{background:linear-gradient(135deg,#c9dafc,#5d8ee8)}
+.tabbar{flex:none;height:64px;background:#fff;border-top:1px solid var(--line);display:flex;justify-content:space-around;align-items:center;padding-bottom:6px}
+.tabbar a{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10px;font-weight:600;color:#9aa69f;cursor:pointer;text-decoration:none}
+.tabbar a.on{color:var(--brand)}
+.listrow{display:flex;align-items:center;gap:12px;padding:11px 0}
+.listrow+.listrow{border-top:1px solid var(--line)}
+.ico{width:36px;height:36px;border-radius:10px;background:var(--brand-l);color:var(--brand-d);display:grid;place-items:center;flex:none}
+.ico.y{background:var(--paid-l);color:var(--paid-ink)}
+.ico.r{background:var(--danger-l);color:var(--danger)}
+.ico.b{background:var(--info-l);color:var(--info)}
+.ico.g{background:#eef1ef;color:var(--muted)}
+.dots{display:flex;gap:6px}
+.dots i{width:7px;height:7px;border-radius:9px;background:#cdd6d1}
+.dots i.on{width:22px;background:var(--brand)}
+.map{position:absolute;inset:0;width:100%;height:100%}
+.spin{position:absolute;transform:translate(-50%,-100%);background:#fff;border-radius:12px;padding:5px 8px 5px 5px;box-shadow:0 6px 14px rgba(0,0,0,.16);display:flex;align-items:center;gap:6px;white-space:nowrap;z-index:2;cursor:pointer}
+.spin::after{content:"";position:absolute;left:50%;bottom:-5px;transform:translateX(-50%) rotate(45deg);width:10px;height:10px;background:inherit}
+.spin .p{width:24px;height:24px;border-radius:8px;display:grid;place-items:center;color:#fff;font-weight:800;font-size:12px;background:var(--brand)}
+.spin.paid .p{background:var(--paid)}
+.spin.full .p{background:var(--danger)}
+.spin .t{font-size:10px;line-height:1.2}
+.spin .t b{font-size:11px;display:block}
+.spin.sel{outline:2px solid var(--brand)}
+.me{position:absolute;width:18px;height:18px;border-radius:50%;background:var(--info);border:3px solid #fff;box-shadow:0 0 0 12px rgba(45,108,223,.18);z-index:2}
+.sheet{position:absolute;left:0;right:0;bottom:0;background:#fff;border-radius:24px 24px 0 0;padding:10px 18px 18px;box-shadow:0 -10px 30px rgba(0,0,0,.08);z-index:4}
+.grab{width:36px;height:4px;border-radius:4px;background:#d3dbd6;margin:0 auto 10px}
+.seg{display:flex;background:#e9eeeb;border-radius:12px;padding:3px}
+.seg div{flex:1;text-align:center;padding:8px 0;border-radius:9px;font-weight:600;font-size:12px;color:var(--muted)}
+.seg div.on{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center}
+.cal b{font-size:10px;color:var(--muted);padding:2px 0 4px}
+.cal i{font-style:normal;font-size:12px;font-weight:600;height:26px;display:grid;place-items:center;border-radius:8px}
+.cal i.off{color:#c3ccc7}
+.cal i.today{box-shadow:inset 0 0 0 1.5px var(--brand);color:var(--brand-d)}
+.cal i.sel{background:var(--brand);color:#fff}
+.otp{display:flex;gap:7px;justify-content:center}
+.otp div{width:38px;height:50px;border-radius:12px;border:1px solid var(--line);background:#fff;display:grid;place-items:center;font-size:20px;font-weight:700}
+.otp div.on{border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-l);color:var(--brand)}
+.keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-top:auto}
+.keypad div{height:40px;display:grid;place-items:center;font-size:18px;font-weight:600;border-radius:10px}
+.plate{display:inline-flex;align-items:stretch;border:2px solid #1c1c1c;border-radius:7px;background:#fff;color:#111;font-weight:800;overflow:hidden;line-height:1;flex:none}
+.plate .e{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:3px 6px;border-right:2px solid #1c1c1c;font-size:7px;letter-spacing:.06em}
+.plate .e b{font-size:13px;letter-spacing:0;margin-top:1px}
+.plate .n{padding:4px 8px;font-size:16px;letter-spacing:.06em;display:flex;align-items:center}
+.plate.big .e{font-size:9px;padding:5px 9px}.plate.big .e b{font-size:18px}
+.plate.big .n{font-size:26px;padding:6px 14px}
+.ticket{background:#fff;border-radius:18px;border:1px solid var(--line);position:relative}
+.ticket .cut{height:0;border-top:2px dashed var(--line);margin:0 14px;position:relative}
+.ticket .cut::before,.ticket .cut::after{content:"";position:absolute;top:-11px;width:20px;height:20px;border-radius:50%;background:var(--bg)}
+.ticket .cut::before{left:-25px}.ticket .cut::after{right:-25px}
+.qr{display:grid;grid-template-columns:repeat(21,1fr);width:140px;height:140px;margin:0 auto}
+.qr i{background:var(--ink)}.qr i.o{background:transparent}
+.ring{position:relative;width:168px;height:168px;margin:0 auto}
+.ring .c{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.toggle{width:38px;height:22px;border-radius:22px;background:#d3dbd6;position:relative;flex:none}
+.toggle::after{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.2)}
+.toggle.on{background:var(--brand)}.toggle.on::after{left:19px}
+.radio{width:18px;height:18px;border-radius:50%;border:2px solid #c3ccc7;flex:none}
+.radio.on{border:5px solid var(--brand)}
+.check{width:18px;height:18px;border-radius:6px;background:var(--brand);color:#fff;display:grid;place-items:center;flex:none}
+.avatar{width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,#7fd3a3,#1e9e5a);display:grid;place-items:center;color:#fff;font-weight:800;font-size:22px;flex:none}
+.steps{display:flex;gap:4px}
+.steps i{flex:1;height:4px;border-radius:4px;background:var(--line)}
+.steps i.on{background:var(--brand)}
+.stat{text-align:center;padding:10px 4px}
+.stat b{font-size:16px;display:block}
+.hero{border-radius:24px;position:relative;overflow:hidden}
+.banner{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:14px;background:var(--ink);color:#fff}
+[data-go]{cursor:pointer}
+.stars{display:flex;gap:6px;justify-content:center}
+.star{color:var(--paid);fill:var(--paid)}
+.scanframe{position:absolute;left:50%;top:44%;width:200px;height:200px;transform:translate(-50%,-50%)}
+.scanframe i{position:absolute;width:36px;height:36px;border:4px solid var(--brand)}
+.scanframe i:nth-child(1){top:0;left:0;border-right:0;border-bottom:0;border-radius:14px 0 0 0}
+.scanframe i:nth-child(2){top:0;right:0;border-left:0;border-bottom:0;border-radius:0 14px 0 0}
+.scanframe i:nth-child(3){bottom:0;left:0;border-right:0;border-top:0;border-radius:0 0 0 14px}
+.scanframe i:nth-child(4){bottom:0;right:0;border-left:0;border-top:0;border-radius:0 0 14px 0}
+.scanline{position:absolute;left:12px;right:12px;top:50%;height:2px;background:var(--brand);box-shadow:0 0 12px var(--brand)}
+
+/* ---------- app shell ---------- */
+html,body{height:100%}
+body{padding:0;margin:0;overflow:hidden;background:#0d1411;-webkit-tap-highlight-color:transparent;user-select:none}
+.app{position:fixed;inset:0;overflow:hidden}
+.device{position:absolute;left:0;top:0;width:300px;height:620px;transform-origin:0 0;border-radius:40px;background:#0d1411;padding:9px;box-shadow:0 30px 60px rgba(0,0,0,.5)}
+.device .screen{position:absolute;inset:9px;width:auto;height:auto}
+.view{display:none!important}
+.view.on{display:flex!important;animation:in .22s ease}
+@keyframes in{from{opacity:.4;transform:translateX(12px)}to{opacity:1;transform:none}}
+.view.back{animation:inb .22s ease}
+@keyframes inb{from{opacity:.4;transform:translateX(-12px)}to{opacity:1;transform:none}}
+[data-go],.chip,.toggle,.seg div,.card,.listrow{cursor:pointer}
+.hint{position:fixed;left:0;right:0;bottom:14px;text-align:center;color:#93a39a;font:500 12px Inter,sans-serif}
+/* Full-screen on phones: drop the frame and fake status bar/notch */
+@media (max-width:600px){
+  body{background:var(--bg)}
+  .device{border-radius:0;padding:0;box-shadow:none;background:var(--bg)}
+  .device .screen{inset:0;border-radius:0}
+  .notch{display:none}
+  .status{height:max(10px, env(safe-area-inset-top));padding:0;font-size:0}
+  .status *{display:none}
+  .hint{display:none}
+}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 22s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12z"/><circle cx="12" cy="10" r="2.5"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></symbol>
+  <symbol id="i-filter" viewBox="0 0 24 24"><path d="M4 6h16M7 12h10M10 18h4"/></symbol>
+  <symbol id="i-list" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></symbol>
+  <symbol id="i-mapi" viewBox="0 0 24 24"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/></symbol>
+  <symbol id="i-star" viewBox="0 0 24 24"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1 6.2L12 17.3 6.5 20.2l1-6.2L3 9.6l6.2-.9z"/></symbol>
+  <symbol id="i-car" viewBox="0 0 24 24"><path d="M5 17h14v-4l-2-5H7l-2 5z"/><path d="M5 13h14"/><circle cx="8" cy="17" r="1.6"/><circle cx="16" cy="17" r="1.6"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+  <symbol id="i-card" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20M6 15h4"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 1 1 12 0v5l2 2H4z"/><path d="M10 21h4"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol>
+  <symbol id="i-ticket" viewBox="0 0 24 24"><path d="M3 8a2 2 0 0 0 0 4 2 2 0 0 0 0 4v2h18v-2a2 2 0 0 1 0-4 2 2 0 0 1 0-4V6H3z"/><path d="M14 6v12" stroke-dasharray="2 2"/></symbol>
+  <symbol id="i-wallet" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h13v4"/><rect x="3" y="7" width="18" height="13" rx="2"/><circle cx="16.5" cy="13.5" r="1.3"/></symbol>
+  <symbol id="i-back" viewBox="0 0 24 24"><path d="m15 5-7 7 7 7"/></symbol>
+  <symbol id="i-next" viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></symbol>
+  <symbol id="i-nav" viewBox="0 0 24 24"><path d="m3 11 18-8-8 18-2-8z"/></symbol>
+  <symbol id="i-phone" viewBox="0 0 24 24"><rect x="6" y="2" width="12" height="20" rx="2"/><path d="M11 18h2"/></symbol>
+  <symbol id="i-mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></symbol>
+  <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z"/></symbol>
+  <symbol id="i-cam" viewBox="0 0 24 24"><path d="M3 8h4l2-3h6l2 3h4v11H3z"/><circle cx="12" cy="13" r="3.5"/></symbol>
+  <symbol id="i-heart" viewBox="0 0 24 24"><path d="M12 20s-8-4.6-8-10.5A4.5 4.5 0 0 1 12 7a4.5 4.5 0 0 1 8 2.5C20 15.4 12 20 12 20z"/></symbol>
+  <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9 7 7M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1"/></symbol>
+  <symbol id="i-out" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-roof" viewBox="0 0 24 24"><path d="M3 11 12 4l9 7M6 10v10M18 10v10"/></symbol>
+  <symbol id="i-access" viewBox="0 0 24 24"><circle cx="12" cy="4" r="1.8"/><path d="M7 8h10M12 8v6l4 6M12 14l-4 6"/></symbol>
+  <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.5V14M12 17.5v.01"/></symbol>
+  <symbol id="i-share" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/></symbol>
+  <symbol id="i-down" viewBox="0 0 24 24"><path d="M12 4v12M6 11l6 6 6-6M4 21h16"/></symbol>
+  <symbol id="i-dots" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="19" cy="12" r="1.2"/></symbol>
+  <symbol id="i-cal" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+  <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 1v3M12 20v3M1 12h3M20 12h3"/></symbol>
+  <symbol id="i-scan" viewBox="0 0 24 24"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3M7 12h10"/></symbol>
+  <symbol id="i-qr" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM20 14v.01M14 20h.01M17 20h4v-3"/></symbol>
+  <symbol id="i-anpr" viewBox="0 0 24 24"><path d="M3 7l5-3h8l5 3"/><rect x="5" y="11" width="14" height="8" rx="1.5"/><path d="M8 15h8"/></symbol>
+  <symbol id="i-gate" viewBox="0 0 24 24"><path d="M4 21V9M4 11h17M8 11l2-2M12 11l2-2M16 11l2-2"/><circle cx="4" cy="7" r="2"/></symbol>
+  <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></symbol>
+  <symbol id="i-doc" viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 14h10l1-14"/></symbol>
+  <symbol id="i-chat" viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 3 2 20h20z"/><path d="M12 10v4M12 17v.01"/></symbol>
+  <symbol id="i-flash" viewBox="0 0 24 24"><path d="M7 2h10l-3 7h4L9 22l2-9H7z"/></symbol>
+  <symbol id="i-image" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m21 17-5-5-9 8"/></symbol>
+
+  <symbol id="map" viewBox="0 0 300 600" preserveAspectRatio="xMidYMid slice">
+    <rect width="300" height="600" fill="#ecefe9"/>
+    <path d="M-10 470 Q90 440 160 480 T320 450 V610 H-10Z" fill="#bfe0ef"/>
+    <path d="M0 150 C80 130 120 180 300 160 V215 C150 230 90 200 0 220Z" fill="#cfe8d6"/>
+    <rect x="200" y="300" width="80" height="70" rx="10" fill="#cfe8d6"/>
+    <g fill="#f9faf8">
+      <rect x="15" y="20" width="70" height="70" rx="6"/><rect x="105" y="20" width="75" height="70" rx="6"/><rect x="200" y="20" width="85" height="70" rx="6"/>
+      <rect x="15" y="250" width="70" height="80" rx="6"/><rect x="105" y="250" width="75" height="35" rx="6"/><rect x="105" y="295" width="75" height="35" rx="6"/>
+      <rect x="15" y="350" width="70" height="60" rx="6"/><rect x="105" y="350" width="75" height="60" rx="6"/><rect x="200" y="385" width="85" height="40" rx="6"/>
+    </g>
+    <g stroke="#fff" stroke-width="13" fill="none" stroke-linecap="round">
+      <path d="M0 110 H300"/><path d="M95 0 V440"/><path d="M190 0 V290 L300 290"/><path d="M0 238 H300"/><path d="M0 340 H190"/><path d="M190 290 V440"/>
+    </g>
+    <path d="M-10 430 C80 400 200 440 320 390" stroke="#ffd98a" stroke-width="16" fill="none" stroke-linecap="round"/>
+  </symbol>
+</svg>
+<div class="app"><div class="device">
+<div class="screen view" id="v-splash" style="background:linear-gradient(165deg,#22b066,#14703f);color:#fff" data-go="onb1">
+    <div class="notch"></div><div class="status"><span>9:41</span><span class="r"><i style="width:14px;height:8px"></i><i style="width:20px;height:9px"></i></span></div>
+    <div class="body" style="align-items:center;justify-content:center;gap:14px">
+      <div style="width:88px;height:88px;border-radius:26px;background:#fff;color:var(--brand);display:grid;place-items:center;font-size:46px;font-weight:800;box-shadow:0 14px 30px rgba(0,0,0,.25)">P</div>
+      <div style="font-size:28px;font-weight:800;letter-spacing:-.02em">ParkGo</div>
+      <div style="opacity:.8">Smart parking across Dubai</div>
+    </div>
+    <div class="center tiny" style="padding-bottom:36px;opacity:.7">Powered by ANPR · Cloud connected</div>
+  </div>
+<div class="screen view" id="v-onb1" style="background:#fff">
+    <div class="notch"></div><div class="status"><span>9:41</span><span class="muted b" data-go="permission">Skip</span></div>
+    <div class="body">
+      <div class="hero" style="height:290px;background:var(--brand-l)">
+        <svg class="map" style="opacity:.75"><use href="#map"/></svg>
+        <div class="spin" style="left:32%;top:36%"><span class="p">P</span><span class="t"><b>42</b>free</span></div>
+        <div class="spin paid" style="left:72%;top:30%"><span class="p">P</span><span class="t"><b>18</b>paid</span></div>
+        <div class="spin paid" style="left:60%;top:72%"><span class="p">P</span><span class="t"><b>9</b>paid</span></div>
+        <div class="me" style="left:44%;top:52%"></div>
+      </div>
+      <div class="h1" style="margin-top:6px">Find parking<br>near you in Dubai</div>
+      <p class="muted" style="line-height:1.55">See nearby sites on the map with live space availability and whether they're free or paid.</p>
+      <div class="between" style="margin-top:auto"><span></span><button class="btn" style="width:56px;height:56px;border-radius:50%" data-go="permission"><svg class="svg"><use href="#i-next"/></svg></button></div>
+    </div>
+  </div>
+<div class="screen view" id="v-permission" style="background:#fff">
+    <div class="notch"></div><div class="status"><span>9:41</span><span></span></div>
+    <div class="body" style="align-items:center;text-align:center;gap:14px">
+      <div style="width:150px;height:150px;border-radius:50%;background:var(--brand-l);display:grid;place-items:center;margin-top:64px;box-shadow:0 0 0 22px var(--brand-xl)"><svg class="svg" style="width:62px;height:62px;color:var(--brand);stroke-width:1.6"><use href="#i-pin"/></svg></div>
+      <div class="h1" style="margin-top:26px">Allow location</div>
+      <p class="muted" style="line-height:1.55">We use your location to show the nearest parking sites and live availability.</p>
+      <div class="col" style="width:100%;margin-top:auto"><button class="btn" data-go="login">Allow while using app</button><button class="btn line" data-go="login">Not now</button></div>
+    </div>
+  </div>
+<div class="screen view" id="v-login" style="background:#fff">
+    <div class="notch"></div><div class="status"><span>9:41</span><span class="flex muted tiny b"><svg class="svg sm"><use href="#i-globe"/></svg>العربية</span></div>
+    <div class="body" style="gap:16px">
+      <div class="logo" style="margin-top:18px">P</div>
+      <div><div class="h1">Welcome to ParkGo</div><div class="muted" style="margin-top:6px;line-height:1.5">Enter your UAE mobile number. We'll send you a one‑time code.</div></div>
+      <div><div class="lbl">Mobile number</div>
+        <div class="flex"><div class="field" style="width:96px;flex:none;gap:6px"><span style="flex:none">🇦🇪</span><b style="color:var(--ink)">+971</b></div><div class="field on grow"><span class="b" style="letter-spacing:.04em">50 123 4567</span></div></div>
+      </div>
+      <button class="btn" data-go="otp">Send OTP</button>
+      <div class="tiny muted center" style="line-height:1.5;margin-top:auto">By continuing you agree to our <b style="color:var(--ink)">Terms of Service</b> and <b style="color:var(--ink)">Privacy Policy</b></div>
+    </div>
+  </div>
+<div class="screen view" id="v-otp" style="background:#fff">
+    <div class="notch"></div><div class="status"><span>9:41</span><span></span></div>
+    <div class="body" style="gap:14px">
+      <div class="navbar"><div class="iconbtn" data-go="login"><svg class="svg"><use href="#i-back"/></svg></div></div>
+      <div><div class="h1">Enter OTP</div><div class="muted" style="margin-top:6px;line-height:1.5">6‑digit code sent to <b style="color:var(--ink)">+971 50 123 4567</b> <b style="color:var(--brand)" data-go="login">Edit</b></div></div>
+      <div class="otp"><div>4</div><div>8</div><div>2</div><div>9</div><div class="on">|</div><div></div></div>
+      <div class="tiny muted center">Didn't get it? Resend in <b style="color:var(--brand)">00:28</b></div>
+      <button class="btn" data-go="setup">Verify & continue</button>
+      <div class="keypad"><div>1</div><div>2</div><div>3</div><div>4</div><div>5</div><div>6</div><div>7</div><div>8</div><div>9</div><div></div><div>0</div><div><svg class="svg"><use href="#i-back"/></svg></div></div>
+    </div>
+  </div>
+<div class="screen view" id="v-setup" style="background:#fff">
+    <div class="notch"></div><div class="status"><span>9:41</span><span></span></div>
+    <div class="body" style="gap:14px">
+      <div class="navbar"><h3></h3><span class="tiny b muted" data-go="home">Skip</span></div>
+      <div><div class="h1">Tell us about you</div><div class="muted" style="margin-top:6px">Used for your parking receipts.</div></div>
+      <div class="center"><div class="avatar" style="margin:0 auto;width:76px;height:76px;position:relative">A<span style="position:absolute;right:-2px;bottom:-2px;width:26px;height:26px;border-radius:50%;background:#fff;border:1px solid var(--line);display:grid;place-items:center;color:var(--ink)"><svg class="svg sm"><use href="#i-cam"/></svg></span></div></div>
+      <div><div class="lbl">Full name</div><div class="field on"><svg class="svg sm"><use href="#i-user"/></svg><span>Ahmed Al Mansoori</span></div></div>
+      <div><div class="lbl">Email <span class="muted">(optional)</span></div><div class="field"><svg class="svg sm"><use href="#i-mail"/></svg><span class="ph">name@example.com</span></div></div>
+      <div class="card flex" style="background:var(--brand-xl);border-color:var(--brand-l)"><svg class="svg sm" style="color:var(--brand)"><use href="#i-shield"/></svg><span class="tiny">Your data is stored securely and never shared.</span></div>
+      <button class="btn" style="margin-top:auto" data-go="home">Continue</button>
+    </div>
+  </div>
+<div class="screen view" id="v-home">
+    <svg class="map"><use href="#map"/></svg>
+    <div class="notch"></div><div class="status"><span>9:41</span><span></span></div>
+    <div style="position:relative;z-index:3;padding:4px 14px" class="col">
+      <div class="field" style="border:0;box-shadow:0 6px 18px rgba(0,0,0,.1);padding:0 6px 0 14px" data-go="search"><svg class="svg sm"><use href="#i-search"/></svg><span class="ph">Search location or parking</span><span style="flex:none;position:relative;color:var(--ink)" data-go="notifs"><svg class="svg"><use href="#i-bell"/></svg><i style="position:absolute;top:0;right:0;width:7px;height:7px;border-radius:50%;background:var(--danger);border:1.5px solid #fff"></i></span><div class="avatar" style="width:32px;height:32px;font-size:12px" data-go="account">A</div></div>
+      <div class="chips"><span class="chip on">All</span><span class="chip">🟢 Free</span><span class="chip">🟠 Paid</span></div>
+    </div>
+    <div class="spin paid" style="left:30%;top:36%" data-go="detail"><span class="p">P</span><span class="t"><b>Boulevard P1</b>128 · Paid</span></div>
+    <div class="spin" style="left:74%;top:30%" data-go="detail"><span class="p">P</span><span class="t"><b>Burj Park</b>42 · Free</span></div>
+    <div class="spin paid" style="left:70%;top:58%" data-go="detail"><span class="p">P</span><span class="t"><b>Dubai Opera</b>17 · Paid</span></div>
+    <div class="spin full" style="left:24%;top:66%"><span class="p">P</span><span class="t"><b>Souk Al Bahar</b>Full</span></div>
+    <div class="spin" style="left:52%;top:80%" data-go="detail"><span class="p">P</span><span class="t"><b>Old Town</b>9 · Free</span></div>
+    <div class="me" style="left:47%;top:51%"></div>
+    <div style="position:absolute;right:14px;bottom:82px;z-index:3" class="col">
+      <div class="iconbtn" style="box-shadow:0 4px 12px rgba(0,0,0,.1)"><svg class="svg"><use href="#i-mapi"/></svg></div>
+      <div class="iconbtn" style="box-shadow:0 4px 12px rgba(0,0,0,.1)"><svg class="svg" style="color:var(--brand)"><use href="#i-target"/></svg></div>
+    </div>
+    <div class="tabbar" style="position:absolute;left:0;right:0;bottom:0;z-index:3">
+      <a class="on"><svg class="svg"><use href="#i-mapi"/></svg>Map</a><a data-go="history"><svg class="svg"><use href="#i-ticket"/></svg>My Parking</a><a data-go="vehicles"><svg class="svg"><use href="#i-car"/></svg>Vehicles</a><a data-go="account"><svg class="svg"><use href="#i-user"/></svg>Account</a>
+    </div>
+  </div>
+<div class="screen view" id="v-search" style="background:#fff">
+    <div class="notch"></div><div class="status"><span>9:41</span><span></span></div>
+    <div class="body">
+      <div class="navbar"><div class="iconbtn" data-go="home"><svg class="svg"><use href="#i-back"/></svg></div><div class="field on grow" style="height:42px"><span>Dubai Mar|</span><svg class="svg sm"><use href="#i-x"/></svg></div></div>
+      <div class="card flex" style="gap:10px;color:var(--brand-d);background:var(--brand-xl);border-color:var(--brand-l)" data-go="home"><svg class="svg"><use href="#i-target"/></svg><b>Parking near my current location</b></div>
+      <div class="cap">Places</div>
+      <div style="padding:0 2px">
+        <div class="listrow" data-go="searchmap"><div class="ico g"><svg class="svg sm"><use href="#i-pin"/></svg></div><div class="grow"><b><span style="color:var(--brand-d)">Dubai Mar</span>ina</b><div class="tiny muted">Dubai, UAE · 22 km</div></div><span class="tag">14 P</span></div>
+        <div class="listrow" data-go="searchmap"><div class="ico g"><svg class="svg sm"><use href="#i-pin"/></svg></div><div class="grow"><b><span style="color:var(--brand-d)">Dubai Mar</span>ina Mall</b><div class="tiny muted">Sheikh Zayed Rd · 23 km</div></div><span class="tag">6 P</span></div>
+        <div class="listrow" data-go="searchmap"><div class="ico g"><svg class="svg sm"><use href="#i-pin"/></svg></div><div class="grow"><b><span style="color:var(--brand-d)">Dubai Mar</span>ina Walk</b><div class="tiny muted">The Walk, JBR · 24 km</div></div><span class="tag">4 P</span></div>
+      </div>
+      <div class="cap">Recent</div>
+      <div style="padding:0 2px">
+        <div class="listrow"><div class="ico g"><svg class="svg sm"><use href="#i-clock"/></svg></div><div class="grow"><b>DIFC Gate Village</b><div class="tiny muted">Financial Centre</div></div></div>
+        <div class="listrow"><div class="ico g"><svg class="svg sm"><use href="#i-clock"/></svg></div><div class="grow"><b>Mall of the Emirates</b><div class="tiny muted">Al Barsha</div></div></div>
+      </div>
+    </div>
+  </div>
+<div class="screen view" id="v-searchmap">
+    <svg class="map"><use href="#map"/></svg>
+    <svg class="map" viewBox="0 0 300 600" preserveAspectRatio="xMidYMid slice" style="z-index:1"><circle cx="140" cy="300" r="105" fill="rgba(30,158,90,.08)" stroke="#1e9e5a" stroke-width="1.5" stroke-dasharray="5 5"/></svg>
+    <div class="notch"></div><div class="status"><span>9:41</span><span></span></div>
+    <div style="position:relative;z-index:3;padding:4px 14px" class="col">
+      <div class="field" style="border:0;box-shadow:0 6px 18px rgba(0,0,0,.1);padding:0 12px 0 8px"><span style="flex:none;color:var(--ink)" data-go="search"><svg class="svg"><use href="#i-back"/></svg></span><span class="b">Dubai Marina</span><span style="flex:none" data-go="home"><svg class="svg sm"><use href="#i-x"/></svg></span></div>
+      <div class="chips"><span class="chip on">5 sites within 1 km</span><span class="chip">🟢 Free</span><span class="chip">🟠 Paid</span></div>
+    </div>
+    <div style="position:absolute;left:47%;top:50%;transform:translate(-50%,-100%);z-index:2">
+      <svg viewBox="0 0 24 24" width="36" height="36" style="display:block;filter:drop-shadow(0 3px 4px rgba(0,0,0,.3))"><path d="M12 23s8-7 8-13.5a8 8 0 1 0-16 0C4 16 12 23 12 23z" fill="#e5484d"/><circle cx="12" cy="9.5" r="3" fill="#fff"/></svg>
+    </div>
+    <div style="position:absolute;left:47%;top:51%;transform:translateX(-50%);z-index:2;background:#fff;border-radius:8px;padding:3px 8px;font-size:10px;font-weight:700;box-shadow:0 2px 6px rgba(0,0,0,.15);white-space:nowrap">Dubai Marina</div>
+    <div class="spin sel" style="left:26%;top:40%" data-go="detail"><span class="p">P</span><span class="t"><b>Marina Walk</b>36 · Free</span></div>
+    <div class="spin paid" style="left:74%;top:38%" data-go="detail"><span class="p">P</span><span class="t"><b>Marina Mall</b>58 · Paid</span></div>
+    <div class="spin paid" style="left:70%;top:66%" data-go="detail"><span class="p">P</span><span class="t"><b>Marina Gate</b>12 · Paid</span></div>
+    <div class="spin full" style="left:26%;top:72%"><span class="p">P</span><span class="t"><b>Pier 7</b>Full</span></div>
+    <div class="spin" style="left:52%;top:28%" data-go="detail"><span class="p">P</span><span class="t"><b>JBR Beach</b>21 · Free</span></div>
+    <div style="position:absolute;right:14px;bottom:82px;z-index:3"><div class="iconbtn" style="box-shadow:0 4px 12px rgba(0,0,0,.1)"><svg class="svg" style="color:var(--brand)"><use href="#i-target"/></svg></div></div>
+    <div style="position:absolute;left:50%;bottom:86px;transform:translateX(-50%);z-index:3"><span class="chip" style="box-shadow:0 4px 12px rgba(0,0,0,.12);border:0"><svg class="svg sm"><use href="#i-search"/></svg>Search this area</span></div>
+    <div class="tabbar" style="position:absolute;left:0;right:0;bottom:0;z-index:3">
+      <a class="on"><svg class="svg"><use href="#i-mapi"/></svg>Map</a><a data-go="history"><svg class="svg"><use href="#i-ticket"/></svg>My Parking</a><a data-go="vehicles"><svg class="svg"><use href="#i-car"/></svg>Vehicles</a><a data-go="account"><svg class="svg"><use href="#i-user"/></svg>Account</a>
+    </div>
+  </div>
+<div class="screen view" id="v-detail">
+    <div style="height:210px;flex:none;position:relative;overflow:hidden">
+      <img src="images/site-parking.jpg" alt="Downtown Boulevard P1 car park" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"><div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.35),transparent 35%,transparent 70%,rgba(0,0,0,.35))"></div>
+      <div class="notch"></div><div class="status" style="color:#fff"><span>9:41</span><span></span></div>
+      <div style="padding:2px 14px;position:relative;z-index:2"><div class="iconbtn" style="box-shadow:0 4px 12px rgba(0,0,0,.12);border:0" data-go="home"><svg class="svg"><use href="#i-back"/></svg></div></div>
+      <span style="position:absolute;right:14px;bottom:28px;z-index:2;background:rgba(18,32,26,.65);color:#fff;font-size:10px;font-weight:700;padding:3px 8px;border-radius:99px">1 / 4</span>
+      <div class="dots" style="position:absolute;bottom:30px;left:0;right:0;justify-content:center;z-index:2"><i class="on" style="background:#fff"></i><i style="background:rgba(255,255,255,.6)"></i><i style="background:rgba(255,255,255,.6)"></i><i style="background:rgba(255,255,255,.6)"></i></div>
+    </div>
+    <div class="body" style="margin-top:-18px;background:var(--bg);border-radius:20px 20px 0 0;padding-top:16px;position:relative;gap:10px">
+      <div><div class="between"><div class="h2">Downtown Boulevard P1</div><span class="tag">Open</span></div><div class="flex tiny muted" style="margin-top:4px"><svg class="svg sm"><use href="#i-pin"/></svg>Sheikh Mohammed bin Rashid Blvd · 350 m</div></div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+        <div class="card stat"><b style="color:var(--brand)">128</b><span class="tiny muted">Spaces free</span></div>
+        <div class="card stat"><b style="color:var(--paid-ink)">Paid</b><span class="tiny muted">AED 5 / hr</span></div>
+        <div class="card stat"><b>24/7</b><span class="tiny muted">Open</span></div>
+      </div>
+      <div class="card" style="padding:2px 12px">
+        <div class="cap" style="padding-top:10px">Parking charges</div>
+        <div class="listrow between"><span class="muted">First hour</span><b>AED 5</b></div>
+        <div class="listrow between"><span class="muted">Every extra hour</span><b>AED 4</b></div>
+      </div>
+      <div class="card flex" style="gap:10px;padding:10px 12px" data-go="reserve"><div class="ico"><svg class="svg sm"><use href="#i-cal"/></svg></div><div class="grow"><b>Reserve for later</b><div class="tiny muted">Book a date and time in advance</div></div><svg class="svg sm muted"><use href="#i-next"/></svg></div>
+      <div class="flex" style="margin-top:auto"><button class="btn ghost" data-go="route"><svg class="svg sm"><use href="#i-nav"/></svg>Navigate</button><button class="btn" data-go="park"><svg class="svg sm"><use href="#i-card"/></svg>Pay now</button></div>
+    </div>
+  </div>
+<div class="screen view" id="v-route">
+    <svg class="map" viewBox="0 0 300 600" preserveAspectRatio="xMidYMid slice">
+      <use href="#map" width="300" height="600"/>
+      <path d="M95 110 H190 V238" fill="none" stroke="#9fb0a7" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="1 8"/>
+      <path d="M95 400 V110" fill="none" stroke="#9fb0a7" stroke-width="5" stroke-linecap="round" stroke-dasharray="1 8"/>
+      <path d="M95 400 V340 H190 V238" fill="none" stroke="#fff" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M95 400 V340 H190 V238" fill="none" stroke="#1e9e5a" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="95" cy="400" r="9" fill="#2d6cdf" stroke="#fff" stroke-width="3"/>
+      <rect x="176" y="208" width="28" height="28" rx="8" fill="#f2a516" stroke="#fff" stroke-width="2.5"/><text x="190" y="227" text-anchor="middle" font-family="Inter" font-weight="800" font-size="14" fill="#fff">P</text>
+      <rect x="112" y="350" width="58" height="20" rx="6" fill="#1e9e5a"/><text x="141" y="364" text-anchor="middle" font-family="Inter" font-weight="700" font-size="10" fill="#fff">8 min</text>
+    </svg>
+    <div class="notch"></div><div class="status"><span>9:41</span><span></span></div>
+    <div style="position:relative;z-index:3;padding:4px 14px">
+      <div class="card flex" style="gap:10px;border:0;box-shadow:0 6px 18px rgba(0,0,0,.1)">
+        <div class="iconbtn" style="border:0;width:30px;height:30px" data-go="detail"><svg class="svg"><use href="#i-back"/></svg></div>
+        <div class="grow col" style="gap:6px">
+          <div class="flex tiny"><i style="width:9px;height:9px;border-radius:50%;background:var(--info);flex:none"></i><span class="muted">Your location</span></div>
+          <div style="height:1px;background:var(--line)"></div>
+          <div class="flex tiny"><i style="width:9px;height:9px;border-radius:3px;background:var(--paid);flex:none"></i><b>Downtown Boulevard P1</b></div>
+        </div>
+      </div>
+    </div>
+    <div class="sheet">
+      <div class="grab"></div>
+      <div><b style="font-size:20px;color:var(--brand-d)">8 min</b> <span class="muted">(2.4 km)</span><div class="tiny muted">Fastest route · via Al Saada St · arrive 9:49 AM</div></div>
+      <div class="flex" style="margin:10px 0"><span class="tag">128 spaces free now</span><span class="tag paid">AED 5/hr</span></div>
+      <button class="btn" data-go="homeback"><svg class="svg sm"><use href="#i-nav"/></svg>Navigate with Google Maps</button>
+      <div class="tiny muted center" style="margin-top:8px">Opens Google Maps. When you arrive, come back to ParkGo to pay.</div>
+    </div>
+  </div>
+<div class="screen view" id="v-homeback">
+    <svg class="map"><use href="#map"/></svg>
+    <div class="notch"></div><div class="status"><span>9:41</span><span></span></div>
+    <div style="position:relative;z-index:3;padding:4px 14px" class="col">
+      <div class="field" style="border:0;box-shadow:0 6px 18px rgba(0,0,0,.1);padding:0 6px 0 14px" data-go="search"><svg class="svg sm"><use href="#i-search"/></svg><span class="ph">Search location or parking</span><span style="flex:none;position:relative;color:var(--ink)" data-go="notifs"><svg class="svg"><use href="#i-bell"/></svg><i style="position:absolute;top:0;right:0;width:7px;height:7px;border-radius:50%;background:var(--danger);border:1.5px solid #fff"></i></span><div class="avatar" style="width:32px;height:32px;font-size:12px" data-go="account">A</div></div>
+      <div class="chips"><span class="chip on">All</span><span class="chip">🟢 Free</span><span class="chip">🟠 Paid</span></div>
+    </div>
+    <div class="spin paid sel" style="left:30%;top:36%" data-go="detail"><span class="p">P</span><span class="t"><b>Boulevard P1</b>128 · Paid</span></div>
+    <div class="spin" style="left:74%;top:30%" data-go="detail"><span class="p">P</span><span class="t"><b>Burj Park</b>42 · Free</span></div>
+    <div class="spin paid" style="left:70%;top:58%" data-go="detail"><span class="p">P</span><span class="t"><b>Dubai Opera</b>17 · Paid</span></div>
+    <div class="spin full" style="left:24%;top:66%"><span class="p">P</span><span class="t"><b>Souk Al Bahar</b>Full</span></div>
+    <div class="spin" style="left:52%;top:80%" data-go="detail"><span class="p">P</span><span class="t"><b>Old Town</b>9 · Free</span></div>
+    <div class="me" style="left:47%;top:51%"></div>
+    <div style="position:absolute;left:12px;right:12px;bottom:76px;z-index:4">
+      <div class="card" style="border:0;box-shadow:0 10px 30px rgba(0,0,0,.18);padding:12px">
+        <div class="flex" style="gap:10px"><div class="thumb y" style="width:42px;height:42px"></div><div class="grow"><div class="tiny muted">You navigated to</div><b>Downtown Boulevard P1</b><div class="tiny" style="color:var(--brand-d);font-weight:600">126 spaces free</div></div><div class="iconbtn" style="width:30px;height:30px;border:0"><svg class="svg sm muted"><use href="#i-x"/></svg></div></div>
+        <button class="btn" style="margin-top:10px;height:42px" data-go="park"><svg class="svg sm"><use href="#i-card"/></svg>Arrived? Pay now</button>
+      </div>
+    </div>
+    <div class="tabbar" style="position:absolute;left:0;right:0;bottom:0;z-index:3">
+      <a class="on"><svg class="svg"><use href="#i-mapi"/></svg>Map</a><a data-go="history"><svg class="svg"><use href="#i-ticket"/></svg>My Parking</a><a data-go="vehicles"><svg class="svg"><use href="#i-car"/></svg>Vehicles</a><a data-go="account"><svg class="svg"><use href="#i-user"/></svg>Account</a>
+    </div>
+  </div>
+<div class="screen view" id="v-park">
+    <div style="height:150px;flex:none;position:relative;overflow:hidden">
+      <img src="images/site-parking.jpg" alt="Downtown Boulevard P1 car park" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">
+      <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.4),transparent 40%,rgba(0,0,0,.65))"></div>
+      <div class="notch"></div><div class="status" style="color:#fff"><span>9:41</span><span></span></div>
+      <div style="padding:2px 14px;position:relative;z-index:2"><div class="iconbtn" style="border:0" data-go="detail"><svg class="svg"><use href="#i-back"/></svg></div></div>
+      <div style="position:absolute;left:16px;right:16px;bottom:12px;color:#fff;z-index:2"><b style="font-size:17px">Downtown Boulevard P1</b><div class="flex tiny" style="margin-top:4px;gap:6px"><span class="tag">128 spaces free</span><span class="tag paid">Paid</span></div></div>
+    </div>
+    <div class="body" style="padding-top:14px">
+      <div class="cap">Recommended vehicle</div>
+      <div class="card flex" style="border:2px solid var(--brand);gap:10px"><span class="plate"><span class="e">DUBAI<b>A</b></span><span class="n">12345</span></span><div class="grow tiny muted">Land Cruiser</div><span class="radio on"></span></div>
+      <div class="card flex" style="gap:10px"><span class="plate"><span class="e">DUBAI<b>Q</b></span><span class="n">78210</span></span><div class="grow tiny muted">Patrol</div><span class="radio"></span></div>
+      <div class="field" data-go="plate"><svg class="svg sm"><use href="#i-plus"/></svg><span class="ph">Or enter another plate number</span></div>
+      <div class="card flex" style="gap:10px;background:var(--paid-l);border-color:transparent;align-items:flex-start">
+        <div class="ico y" style="background:#fff"><svg class="svg sm"><use href="#i-clock"/></svg></div>
+        <div class="grow"><b>Pay at entry · enter within 15 min</b><div class="tiny muted" style="line-height:1.45;margin-top:2px">After payment, please enter this site within 15 minutes.</div></div>
+      </div>
+      <button class="btn" style="margin-top:auto" data-go="prepaid">Continue to payment</button>
+    </div>
+  </div>
+<div class="screen view" id="v-plate">
+    <div style="height:150px;flex:none;position:relative;overflow:hidden">
+      <img src="images/site-parking.jpg" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">
+      <div class="notch"></div><div class="status" style="color:#fff"><span>9:41</span><span></span></div>
+    </div>
+    <div class="body" style="opacity:.35"><div class="card" style="height:60px"></div><div class="card" style="height:60px"></div></div>
+    <div style="position:absolute;inset:0;background:rgba(10,20,15,.45);z-index:3"></div>
+    <div class="sheet" style="z-index:5">
+      <div class="grab"></div>
+      <div class="between"><div class="h2">Enter plate number</div><div class="iconbtn" data-go="park"><svg class="svg sm"><use href="#i-x"/></svg></div></div>
+      <div class="card center" style="padding:14px;margin:12px 0;background:#fbfcfb"><span class="plate big"><span class="e">DUBAI<b>K</b></span><span class="n">55021</span></span></div>
+      <div class="flex">
+        <div class="grow"><div class="lbl">Emirate</div><div class="field" style="padding:0 10px;height:42px"><span>Dubai</span><svg class="svg sm"><use href="#i-next"/></svg></div></div>
+        <div style="width:64px"><div class="lbl">Code</div><div class="field" style="padding:0 10px;height:42px"><span class="b">K</span></div></div>
+      </div>
+      <div style="margin-top:10px"><div class="lbl">Plate number</div><div class="field on" style="height:42px"><span class="b" style="letter-spacing:.1em">55021</span></div></div>
+      <div class="card flex" style="margin:10px 0;padding:10px 12px"><span class="grow tiny">Save to My vehicles</span><span class="toggle"></span></div>
+      <button class="btn" data-go="park">Use this vehicle</button>
+    </div>
+  </div>
+<div class="screen view" id="v-prepaid">
+    <div class="notch"></div><div class="status"><span>9:41</span><span></span></div>
+    <div class="body">
+      <div class="navbar"><div class="iconbtn" data-go="park"><svg class="svg"><use href="#i-back"/></svg></div><h3>Entry payment</h3></div>
+      <div class="steps"><i class="on"></i><i class="on"></i><i></i></div>
+      <div class="card between"><div><div class="tiny muted">Vehicle</div><span class="plate" style="margin-top:4px"><span class="e">DUBAI<b>A</b></span><span class="n">12345</span></span></div><div style="text-align:right"><div class="tiny muted">Site</div><b>Boulevard P1</b></div></div>
+      <div class="cap">Parking duration</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+        <div class="card stat"><b>1 h</b><span class="tiny muted">AED 5</span></div>
+        <div class="card stat" style="border:2px solid var(--brand);background:var(--brand-xl)"><b style="color:var(--brand-d)">2 h</b><span class="tiny muted">AED 9</span></div>
+        <div class="card stat"><b>3 h</b><span class="tiny muted">AED 13</span></div>
+        <div class="card stat"><b>4 h</b><span class="tiny muted">AED 17</span></div>
+        <div class="card stat"><b>6 h</b><span class="tiny muted">AED 25</span></div>
+        <div class="card stat"><b>Day</b><span class="tiny muted">AED 40</span></div>
+      </div>
+      <div class="card flex" style="gap:10px"><svg class="svg" style="color:var(--brand)"><use href="#i-clock"/></svg><div class="grow"><b>9:41 AM → 11:41 AM</b><div class="tiny muted">Today · overstay is charged at exit</div></div></div>
+      <div style="margin-top:auto" class="col">
+        <div class="between" style="padding:0 2px"><span class="muted">Total</span><b style="font-size:18px;white-space:nowrap">AED 9.00</b></div>
+        <button class="btn" data-go="payment">Pay now</button>
+      </div>
+    </div>
+  </div>
+<div class="screen view" id="v-payment">
+    <div class="notch"></div><div class="status"><span>9:41</span><span></span></div>
+    <div class="body" style="gap:9px">
+      <div class="navbar"><div class="iconbtn" data-go="prepaid"><svg class="svg"><use href="#i-back"/></svg></div><h3>Payment</h3><svg class="svg muted"><use href="#i-lock"/></svg></div>
+      <div class="card between" style="background:var(--ink);color:#fff;border:0;padding:10px 14px"><div><div class="tiny" style="opacity:.7">Total to pay</div><b style="font-size:20px">AED 9.00</b></div></div>
+      <div class="cap">ParkGo Wallet</div>
+      <div class="card flex" style="gap:10px;border:2px solid var(--brand)"><div class="ico"><svg class="svg sm"><use href="#i-wallet"/></svg></div><div class="grow"><b>Wallet balance</b><div class="tiny muted">AED 65.00 available</div></div><b class="tiny" style="color:var(--brand)" data-go="wallet">Top up</b><span class="radio on"></span></div>
+      <div class="cap">Quick pay</div>
+      <div class="flex">
+        <div class="card flex grow" style="justify-content:center;gap:6px;padding:10px"><b style="font-size:15px"></b><b>Apple Pay</b></div>
+        <div class="card flex grow" style="justify-content:center;gap:6px;padding:10px"><b style="color:#4285f4">G</b><b>Google Pay</b></div>
+      </div>
+      <div class="card flex" style="gap:10px;padding:10px 12px"><div class="ico b"><svg class="svg sm"><use href="#i-card"/></svg></div><div class="grow"><b>Visa •••• 4821</b><div class="tiny muted">Saved card</div></div><span class="radio"></span></div>
+      <button class="btn" style="margin-top:auto" data-go="paysuccess"><svg class="svg sm"><use href="#i-lock"/></svg>Pay now · AED 9.00</button>
+    </div>
+  </div>
+<div class="screen view" id="v-paysuccess" style="background:#fff">
+    <div class="notch"></div><div class="status"><span>9:41</span><span></span></div>
+    <div class="body" style="align-items:center;text-align:center">
+      <div style="width:110px;height:110px;border-radius:50%;background:var(--brand);color:#fff;display:grid;place-items:center;margin-top:44px;box-shadow:0 0 0 16px var(--brand-l),0 0 0 32px var(--brand-xl)"><svg class="svg" style="width:52px;height:52px;stroke-width:3"><use href="#i-check"/></svg></div>
+      <div class="h1" style="margin-top:40px">Payment successful</div>
+      <p class="muted" style="line-height:1.5">AED 9.00 paid for Downtown Boulevard P1.</p>
+      <div class="card flex" style="width:100%;gap:10px;text-align:left;background:var(--paid-l);border-color:transparent"><div class="ico y" style="background:#fff"><svg class="svg sm"><use href="#i-clock"/></svg></div><div class="grow"><b>Please enter within 15 minutes</b><div class="tiny muted">Enter the site before <b style="color:var(--ink)">9:56 AM</b></div></div><b style="font-size:16px;color:var(--paid-ink)">14:59</b></div>
+      <div class="card" style="width:100%;padding:2px 12px;text-align:left">
+        <div class="listrow between"><span class="muted">Parking valid until</span><b>11:41 AM</b></div>
+        <div class="listrow between"><span class="muted">Transaction</span><b>#PG‑240917</b></div>
+      </div>
+      <div class="col" style="width:100%;margin-top:auto"><button class="btn" data-go="active"><svg class="svg sm"><use href="#i-nav"/></svg>Directions (Google Maps)</button><button class="btn line" data-go="active">View my parking</button></div>
+    </div>
+  </div>
+<div class="screen view" id="v-active">
+    <div class="notch"></div><div class="status"><span>9:41</span><span></span></div>
+    <div class="body">
+      <div class="navbar"><div class="iconbtn" data-go="home"><svg class="svg"><use href="#i-back"/></svg></div><h3>Active parking</h3><span class="tag"><i style="width:6px;height:6px;border-radius:50%;background:var(--brand)"></i>Live</span></div>
+      <div class="card" style="padding:14px 12px">
+        <div class="ring">
+          <svg viewBox="0 0 168 168" width="168" height="168"><circle cx="84" cy="84" r="72" fill="none" stroke="#e6f5ec" stroke-width="12"/><circle cx="84" cy="84" r="72" fill="none" stroke="#1e9e5a" stroke-width="12" stroke-linecap="round" stroke-dasharray="452" stroke-dashoffset="150" transform="rotate(-90 84 84)"/></svg>
+          <div class="c"><div class="tiny muted">Parked for</div><b style="font-size:28px;letter-spacing:-.02em">01:18:42</b><div class="tiny muted">Prepaid until 11:41 AM</div></div>
+        </div>
+      </div>
+      <div class="card" style="padding:0 12px">
+        <div class="listrow" style="padding:9px 0"><svg class="svg sm muted"><use href="#i-pin"/></svg><span class="grow muted">Site</span><b>Downtown Boulevard P1</b></div>
+        <div class="listrow" style="padding:9px 0"><svg class="svg sm muted"><use href="#i-car"/></svg><span class="grow muted">Vehicle</span><span class="plate"><span class="e">DUBAI<b>A</b></span><span class="n">12345</span></span></div>
+        <div class="listrow" style="padding:9px 0"><svg class="svg sm muted"><use href="#i-clock"/></svg><span class="grow muted">Entry time</span><b>9:41 AM</b></div>
+        <div class="listrow" style="padding:9px 0"><svg class="svg sm muted"><use href="#i-card"/></svg><span class="grow muted">Paid</span><b>AED 9.00</b></div>
+      </div>
+      <div class="banner"><svg class="svg sm" style="color:var(--paid)"><use href="#i-bell"/></svg><span class="tiny grow">We'll remind you 15 min before your time ends.</span></div>
+      <div class="flex" style="margin-top:auto"><button class="btn ghost" data-go="extend">Extend</button><button class="btn" data-go="exitpay">Exit & pay</button></div>
+    </div>
+  </div>
+<div class="screen view" id="v-extend">
+    <div class="notch"></div><div class="status"><span>9:41</span><span></span></div>
+    <div class="body" style="opacity:.35"><div class="navbar"><div class="iconbtn"><svg class="svg"><use href="#i-back"/></svg></div><h3>Active parking</h3></div><div class="card" style="height:250px"></div></div>
+    <div style="position:absolute;inset:0;background:rgba(10,20,15,.35);z-index:3"></div>
+    <div class="sheet" style="z-index:5">
+      <div class="grab"></div>
+      <div class="between"><div class="h2">Extend parking</div><div class="iconbtn" data-go="active"><svg class="svg sm"><use href="#i-x"/></svg></div></div>
+      <div class="tiny muted" style="margin:4px 0 12px">Currently prepaid until 11:41 AM</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px">
+        <div class="card stat"><b>+30m</b><span class="tiny muted">AED 2</span></div>
+        <div class="card stat" style="border:2px solid var(--brand);background:var(--brand-xl)"><b style="color:var(--brand-d)">+1h</b><span class="tiny muted">AED 4</span></div>
+        <div class="card stat"><b>+2h</b><span class="tiny muted">AED 8</span></div>
+        <div class="card stat"><b>+3h</b><span class="tiny muted">AED 12</span></div>
+      </div>
+      <div class="card between" style="margin-top:12px;background:var(--brand-l);border-color:transparent"><span class="muted">New end time</span><b style="color:var(--brand-d)">12:41 PM</b></div>
+      <div class="between" style="margin:12px 0"><span class="flex muted"><svg class="svg sm"><use href="#i-wallet"/></svg>ParkGo Wallet · AED 65</span><b class="tiny" style="color:var(--brand)">Change</b></div>
+      <button class="btn" data-go="active">Pay AED 4 & extend</button>
+    </div>
+  </div>
+<div class="screen view" id="v-exitpay">
+    <div class="notch"></div><div class="status"><span>9:41</span><span></span></div>
+    <div class="body">
+      <div class="navbar"><div class="iconbtn" data-go="active"><svg class="svg"><use href="#i-back"/></svg></div><h3>Exit payment</h3></div>
+      <div class="card center" style="padding:16px">
+        <div class="tiny muted">Amount due to exit</div>
+        <div style="font-size:34px;font-weight:800;letter-spacing:-.02em;margin:4px 0">AED 4.00</div>
+        <span class="tag paid">Overstay 22 min</span>
+      </div>
+      <div class="card" style="padding:2px 12px">
+        <div class="listrow between"><span class="muted">Site</span><b>Downtown Boulevard P1</b></div>
+        <div class="listrow between"><span class="muted">Entry → Exit</span><b>9:41 → 12:03</b></div>
+        <div class="listrow between"><span class="muted">Total duration</span><b>2 h 22 m</b></div>
+        <div class="listrow between"><span class="muted">Already prepaid</span><span>− AED 9.00</span></div>
+      </div>
+      <div class="field" style="margin-top:auto"><div class="ico" style="background:#000;color:#fff;width:28px;height:28px;border-radius:8px"></div><span class="b">Apple Pay</span><b class="tiny" style="color:var(--brand)">Change</b></div>
+      <button class="btn" data-go="receipt">Pay AED 4.00 & exit</button>
+    </div>
+  </div>
+<div class="screen view" id="v-receipt">
+    <div class="notch"></div><div class="status"><span>9:41</span><span></span></div>
+    <div class="body">
+      <div class="navbar"><div class="iconbtn" data-go="home"><svg class="svg"><use href="#i-x"/></svg></div><h3>Receipt</h3><div class="iconbtn"><svg class="svg"><use href="#i-share"/></svg></div></div>
+      <div class="ticket">
+        <div style="padding:14px;text-align:center"><div class="ico" style="margin:0 auto;width:46px;height:46px;border-radius:50%"><svg class="svg lg" style="stroke-width:3"><use href="#i-check"/></svg></div><b style="display:block;margin-top:8px">Thanks for parking!</b><div class="tiny muted">Exit gate opened · 12:04 PM</div></div>
+        <div class="cut"></div>
+        <div style="padding:6px 14px 10px">
+          <div class="listrow between"><span class="muted">Receipt no.</span><b>RC‑2026‑10‑0482</b></div>
+          <div class="listrow between"><span class="muted">Duration</span><b>2 h 22 m</b></div>
+          <div class="listrow between"><b>Total paid</b><b style="font-size:15px">AED 13.00</b></div>
+        </div>
+      </div>
+      <button class="btn line"><svg class="svg sm"><use href="#i-down"/></svg>Download receipt</button>
+      <div class="card center"><b>Rate this site</b><div class="stars" style="margin-top:8px"><svg class="svg star lg"><use href="#i-star"/></svg><svg class="svg star lg"><use href="#i-star"/></svg><svg class="svg star lg"><use href="#i-star"/></svg><svg class="svg star lg"><use href="#i-star"/></svg><svg class="svg lg" style="color:#d3dbd6"><use href="#i-star"/></svg></div></div>
+      <button class="btn" style="margin-top:auto" data-go="home">Back to map</button>
+    </div>
+  </div>
+<div class="screen view" id="v-qrticket">
+    <div class="notch"></div><div class="status"><span>9:41</span><span></span></div>
+    <div class="body">
+      <div class="navbar"><div class="iconbtn" data-go="park"><svg class="svg"><use href="#i-back"/></svg></div><h3>Parking ticket</h3><div class="iconbtn"><svg class="svg"><use href="#i-share"/></svg></div></div>
+      <div class="ticket">
+        <div style="padding:14px;text-align:center"><div class="tiny muted">Show this QR at the gate reader</div><div class="qr" style="margin-top:10px"></div><div class="b" style="margin-top:8px;letter-spacing:.12em">PG‑DIFC‑58217</div><div class="tiny muted" style="margin-top:2px">Increase screen brightness for faster scan</div></div>
+        <div class="cut"></div>
+        <div style="padding:12px 14px;display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div><div class="tiny muted">Site</div><b>DIFC Gate Parking</b></div><div><div class="tiny muted">Plate</div><b>DXB A 12345</b></div>
+          <div><div class="tiny muted">Entry</div><b>9:41 AM</b></div><div><div class="tiny muted">Status</div><span class="tag">Active</span></div>
+        </div>
+      </div>
+      <button class="btn" style="margin-top:auto" data-go="active">Done</button>
+    </div>
+  </div>
+<div class="screen view" id="v-reserve">
+    <div class="notch"></div><div class="status"><span>9:41</span><span></span></div>
+    <div class="body" style="gap:10px">
+      <div class="navbar"><div class="iconbtn" data-go="detail"><svg class="svg"><use href="#i-back"/></svg></div><h3>Reserve · Boulevard P1</h3></div>
+      <div class="card" style="padding:10px 10px 8px">
+        <div class="between" style="padding:0 4px 6px"><b>October 2026</b><span class="flex muted"><svg class="svg sm"><use href="#i-back"/></svg><svg class="svg sm"><use href="#i-next"/></svg></span></div>
+        <div class="cal"><b>S</b><b>M</b><b>T</b><b>W</b><b>T</b><b>F</b><b>S</b><i></i><i></i><i></i><i></i><i class="off">1</i><i class="off">2</i><i class="off">3</i><i class="off">4</i><i class="off">5</i><i class="today">6</i><i class="sel">7</i><i>8</i><i>9</i><i>10</i><i>11</i><i>12</i><i>13</i><i>14</i><i>15</i><i>16</i><i>17</i><i>18</i><i>19</i><i>20</i><i>21</i><i>22</i><i>23</i><i>24</i><i>25</i><i>26</i><i>27</i><i>28</i><i>29</i><i>30</i><i>31</i></div>
+      </div>
+      <div class="flex">
+        <div class="grow"><div class="lbl">Arrival time</div><div class="field" style="height:42px"><svg class="svg sm"><use href="#i-clock"/></svg><span class="b">6:00 PM</span></div></div>
+        <div class="grow"><div class="lbl">Duration</div><div class="field" style="height:42px"><span class="b">3 hours</span><svg class="svg sm"><use href="#i-next"/></svg></div></div>
+      </div>
+      <div class="card flex" style="gap:10px;padding:10px 12px"><span class="plate"><span class="e">DUBAI<b>A</b></span><span class="n">12345</span></span><span class="grow tiny muted">Land Cruiser</span><b class="tiny" style="color:var(--brand)">Change</b></div>
+      <div style="margin-top:auto" class="col">
+        <div class="between" style="padding:0 2px"><span class="muted">Total</span><b style="font-size:18px">AED 18.00</b></div>
+        <button class="btn" data-go="payment">Reserve & pay</button>
+      </div>
+    </div>
+  </div>
+<div class="screen view" id="v-reserved">
+    <div class="notch"></div><div class="status"><span>9:41</span><span></span></div>
+    <div class="body">
+      <div class="navbar"><div class="iconbtn" data-go="home"><svg class="svg"><use href="#i-x"/></svg></div><h3>Reservation</h3><div class="iconbtn"><svg class="svg"><use href="#i-share"/></svg></div></div>
+      <div class="center" style="padding:6px 0"><div class="ico" style="margin:0 auto;width:64px;height:64px;border-radius:50%;background:var(--brand);color:#fff;box-shadow:0 0 0 10px var(--brand-l)"><svg class="svg lg" style="stroke-width:3"><use href="#i-check"/></svg></div><div class="h2" style="margin-top:18px">Your space is reserved</div><div class="tiny muted" style="margin-top:4px">Reservation ID #RS‑71524</div></div>
+      <div class="ticket" style="padding:4px 14px">
+        <div class="listrow between"><span class="muted">Site</span><b>Downtown Boulevard P1</b></div>
+        <div class="listrow between"><span class="muted">Date</span><b>Wed, 7 Oct</b></div>
+        <div class="listrow between"><span class="muted">Time</span><b>6:00 PM – 9:00 PM</b></div>
+        <div class="listrow between"><span class="muted">Vehicle</span><span class="plate"><span class="e">DUBAI<b>A</b></span><span class="n">12345</span></span></div>
+        <div class="listrow between"><span class="muted">Paid</span><b>AED 18.00</b></div>
+      </div>
+      <div class="card flex tiny" style="gap:8px;background:var(--brand-xl);border-color:var(--brand-l)"><svg class="svg sm" style="color:var(--brand)"><use href="#i-gate"/></svg><span style="line-height:1.45">Just drive in. The gate opens when your plate is recognised.</span></div>
+      <button class="btn" style="margin-top:auto" data-go="homeback"><svg class="svg sm"><use href="#i-nav"/></svg>Directions (Google Maps)</button>
+    </div>
+  </div>
+<div class="screen view" id="v-history">
+    <div class="notch"></div><div class="status"><span>9:41</span><span></span></div>
+    <div class="body">
+      <div class="navbar"><h3 style="font-size:20px">My Parking</h3><div class="iconbtn"><svg class="svg"><use href="#i-filter"/></svg></div></div>
+      <div class="seg"><div data-go="active">Active</div><div data-go="reserved">Upcoming</div><div class="on">Past</div></div>
+      <div class="cap">October 2026</div>
+      <div class="card col" style="gap:8px" data-go="receipt"><div class="between"><b>Downtown Boulevard P1</b><b>AED 13.00</b></div><div class="between tiny muted"><span>6 Oct · 9:41 AM – 12:04 PM</span><span class="tag paid">Paid</span></div><div class="between"><span class="plate"><span class="e">DUBAI<b>A</b></span><span class="n">12345</span></span><span class="tiny b" style="color:var(--brand)">Receipt ›</span></div></div>
+      <div class="card col" style="gap:8px"><div class="between"><b>Burj Park Free Lot</b><b style="color:var(--brand)">Free</b></div><div class="between tiny muted"><span>4 Oct · 6:10 – 8:02 PM</span><span class="tag">Free</span></div><div class="between"><span class="plate"><span class="e">DUBAI<b>A</b></span><span class="n">12345</span></span><span class="tiny b" style="color:var(--brand)">Details ›</span></div></div>
+      <div class="card col" style="gap:8px"><div class="between"><b>DIFC Gate Parking</b><b>AED 24.00</b></div><div class="between tiny muted"><span>2 Oct · 8:30 AM – 11:30 AM</span><span class="tag type">Ticket</span></div><div class="between"><span class="plate"><span class="e">DUBAI<b>Q</b></span><span class="n">78210</span></span><span class="tiny b" style="color:var(--brand)">Receipt ›</span></div></div>
+    </div>
+    <div class="tabbar"><a data-go="home"><svg class="svg"><use href="#i-mapi"/></svg>Map</a><a class="on"><svg class="svg"><use href="#i-ticket"/></svg>My Parking</a><a data-go="vehicles"><svg class="svg"><use href="#i-car"/></svg>Vehicles</a><a data-go="account"><svg class="svg"><use href="#i-user"/></svg>Account</a></div>
+  </div>
+<div class="screen view" id="v-notifs">
+    <div class="notch"></div><div class="status"><span>9:41</span><span></span></div>
+    <div class="body">
+      <div class="navbar"><div class="iconbtn" data-go="home"><svg class="svg"><use href="#i-back"/></svg></div><h3>Notifications</h3><span class="tiny b" style="color:var(--brand)">Read all</span></div>
+      <div class="cap">Today</div>
+      <div class="card flex" style="align-items:flex-start;gap:10px;border-color:var(--paid);background:#fffcf3" data-go="exitpay"><div class="ico y"><svg class="svg sm"><use href="#i-clock"/></svg></div><div class="grow"><b>15 min left</b><div class="tiny muted" style="line-height:1.45">Prepaid time at Boulevard P1 ends 11:41 AM. Extend now or pay on exit.</div><div class="tiny muted" style="margin-top:4px">2 min ago</div></div></div>
+      <div class="card flex" style="align-items:flex-start;gap:10px"><div class="ico"><svg class="svg sm"><use href="#i-anpr"/></svg></div><div class="grow"><b>Entry recorded</b><div class="tiny muted" style="line-height:1.45">DXB A 12345 entered Downtown Boulevard P1.</div><div class="tiny muted" style="margin-top:4px">9:41 AM</div></div></div>
+      <div class="card flex" style="align-items:flex-start;gap:10px"><div class="ico"><svg class="svg sm"><use href="#i-check"/></svg></div><div class="grow"><b>Payment received · enter within 15 min</b><div class="tiny muted" style="line-height:1.45">AED 9.00 paid. Please enter Downtown Boulevard P1 before 9:56 AM.</div><div class="tiny muted" style="margin-top:4px">9:40 AM</div></div></div>
+      <div class="cap">Earlier</div>
+      <div class="card flex" style="align-items:flex-start;gap:10px"><div class="ico b"><svg class="svg sm"><use href="#i-pin"/></svg></div><div class="grow"><b>New site near you</b><div class="tiny muted" style="line-height:1.45">Marina Walk Parking is now live on ParkGo.</div><div class="tiny muted" style="margin-top:4px">Yesterday</div></div></div>
+    </div>
+  </div>
+<div class="screen view" id="v-account">
+    <div class="notch"></div><div class="status"><span>9:41</span><span></span></div>
+    <div class="body">
+      <div class="navbar"><h3 style="font-size:20px">Account</h3><div class="iconbtn" data-go="settings"><svg class="svg"><use href="#i-gear"/></svg></div></div>
+      <div class="card flex" style="gap:14px"><div class="avatar">A</div><div class="grow"><b style="font-size:16px">Ahmed Al Mansoori</b><div class="tiny muted">+971 50 123 4567</div><div class="tiny b" style="color:var(--brand);margin-top:3px">Edit profile</div></div></div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+        <div class="card stat"><b>18</b><span class="tiny muted">Times parked</span></div>
+        <div class="card stat"><b>3</b><span class="tiny muted">Vehicles</span></div>
+        <div class="card stat" data-go="wallet"><b>AED 65</b><span class="tiny muted">Wallet</span></div>
+      </div>
+      <div class="card" style="padding:2px 12px">
+        <div class="listrow" data-go="vehicles"><div class="ico"><svg class="svg sm"><use href="#i-car"/></svg></div><span class="grow b">My vehicles</span><svg class="svg sm muted"><use href="#i-next"/></svg></div>
+        <div class="listrow" data-go="wallet"><div class="ico"><svg class="svg sm"><use href="#i-wallet"/></svg></div><span class="grow b">Wallet & payment methods</span><svg class="svg sm muted"><use href="#i-next"/></svg></div>
+        <div class="listrow"><div class="ico"><svg class="svg sm"><use href="#i-heart"/></svg></div><span class="grow b">Favourite sites</span><svg class="svg sm muted"><use href="#i-next"/></svg></div>
+        <div class="listrow" data-go="history"><div class="ico"><svg class="svg sm"><use href="#i-doc"/></svg></div><span class="grow b">Receipts</span><svg class="svg sm muted"><use href="#i-next"/></svg></div>
+        <div class="listrow" data-go="help"><div class="ico"><svg class="svg sm"><use href="#i-help"/></svg></div><span class="grow b">Help & support</span><svg class="svg sm muted"><use href="#i-next"/></svg></div>
+      </div>
+    </div>
+    <div class="tabbar"><a data-go="home"><svg class="svg"><use href="#i-mapi"/></svg>Map</a><a data-go="history"><svg class="svg"><use href="#i-ticket"/></svg>My Parking</a><a data-go="vehicles"><svg class="svg"><use href="#i-car"/></svg>Vehicles</a><a class="on"><svg class="svg"><use href="#i-user"/></svg>Account</a></div>
+  </div>
+<div class="screen view" id="v-wallet">
+    <div class="notch"></div><div class="status"><span>9:41</span><span></span></div>
+    <div class="body" style="gap:10px">
+      <div class="navbar"><div class="iconbtn" data-go="account"><svg class="svg"><use href="#i-back"/></svg></div><h3>Wallet</h3></div>
+      <div style="border-radius:18px;padding:16px;color:#fff;background:linear-gradient(135deg,#22b066,#14703f)">
+        <div class="tiny" style="opacity:.85">Available balance</div>
+        <div style="font-size:28px;font-weight:800;letter-spacing:-.02em;margin:2px 0 12px">AED 65.00</div>
+        <button class="btn sm" style="background:#fff;color:var(--brand-d);width:auto"><svg class="svg sm"><use href="#i-plus"/></svg>Top up</button>
+      </div>
+      <div class="cap">Quick top up</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px"><span class="chip" style="justify-content:center">50</span><span class="chip on" style="justify-content:center">100</span><span class="chip" style="justify-content:center">200</span><span class="chip" style="justify-content:center">500</span></div>
+      <div class="card flex" style="gap:10px;padding:10px 12px"><div class="ico"><svg class="svg sm"><use href="#i-bolt"/></svg></div><div class="grow"><b>Auto top up</b><div class="tiny muted">Add AED 100 when below AED 20</div></div><span class="toggle on"></span></div>
+      <div class="between"><span class="cap">Recent activity</span><b class="tiny" style="color:var(--brand)">See all</b></div>
+      <div class="card" style="padding:0 12px">
+        <div class="listrow" style="padding:9px 0"><div class="ico" style="width:32px;height:32px"><svg class="svg sm"><use href="#i-car"/></svg></div><div class="grow"><b class="tiny">Downtown Boulevard P1</b><div class="tiny muted">Today, 9:40 AM</div></div><b class="tiny" style="color:var(--danger)">− 9.00</b></div>
+        <div class="listrow" style="padding:9px 0"><div class="ico" style="width:32px;height:32px"><svg class="svg sm"><use href="#i-plus"/></svg></div><div class="grow"><b class="tiny">Wallet top up · Card</b><div class="tiny muted">3 Oct, 7:12 PM</div></div><b class="tiny" style="color:var(--brand)">+ 100.00</b></div>
+        <div class="listrow" style="padding:9px 0"><div class="ico" style="width:32px;height:32px"><svg class="svg sm"><use href="#i-car"/></svg></div><div class="grow"><b class="tiny">DIFC Gate Parking</b><div class="tiny muted">2 Oct, 11:30 AM</div></div><b class="tiny" style="color:var(--danger)">− 24.00</b></div>
+      </div>
+    </div>
+  </div>
+<div class="screen view" id="v-vehicles">
+    <div class="notch"></div><div class="status"><span>9:41</span><span></span></div>
+    <div class="body">
+      <div class="navbar"><h3 style="font-size:20px">My vehicles</h3><div class="iconbtn" data-go="addvehicle"><svg class="svg" style="color:var(--brand)"><use href="#i-plus"/></svg></div></div>
+      <div class="card col" style="border:2px solid var(--brand);gap:10px">
+        <div class="between"><span class="tag">★ Default · Recommended</span><svg class="svg sm muted"><use href="#i-next"/></svg></div>
+        <div class="flex" style="gap:12px"><div class="ico" style="width:46px;height:46px"><svg class="svg lg"><use href="#i-car"/></svg></div><div class="grow"><b>Toyota Land Cruiser</b><div class="tiny muted">"Family car" · White</div></div></div>
+        <span class="plate"><span class="e">DUBAI<b>A</b></span><span class="n">12345</span></span>
+      </div>
+      <div class="card col" style="gap:10px">
+        <div class="flex" style="gap:12px"><div class="ico g" style="width:46px;height:46px"><svg class="svg lg"><use href="#i-car"/></svg></div><div class="grow"><b>Nissan Patrol</b><div class="tiny muted">"Work" · Black</div></div><svg class="svg sm muted"><use href="#i-next"/></svg></div>
+        <span class="plate"><span class="e">DUBAI<b>Q</b></span><span class="n">78210</span></span>
+      </div>
+      <div class="card col" style="gap:10px">
+        <div class="flex" style="gap:12px"><div class="ico g" style="width:46px;height:46px"><svg class="svg lg"><use href="#i-bolt"/></svg></div><div class="grow"><b>Tesla Model Y</b><div class="tiny muted">Grey · EV</div></div><svg class="svg sm muted"><use href="#i-next"/></svg></div>
+        <span class="plate"><span class="e">ABU DHABI<b>5</b></span><span class="n">40981</span></span>
+      </div>
+    </div>
+    <div class="tabbar"><a data-go="home"><svg class="svg"><use href="#i-mapi"/></svg>Map</a><a data-go="history"><svg class="svg"><use href="#i-ticket"/></svg>My Parking</a><a class="on"><svg class="svg"><use href="#i-car"/></svg>Vehicles</a><a data-go="account"><svg class="svg"><use href="#i-user"/></svg>Account</a></div>
+  </div>
+<div class="screen view" id="v-addvehicle">
+    <div class="notch"></div><div class="status"><span>9:41</span><span></span></div>
+    <div class="body">
+      <div class="navbar"><div class="iconbtn" data-go="vehicles"><svg class="svg"><use href="#i-back"/></svg></div><h3>Add vehicle</h3></div>
+      <div class="card center" style="padding:16px;background:#fbfcfb"><span class="plate big"><span class="e">DUBAI<b>A</b></span><span class="n">12345</span></span><div class="tiny muted" style="margin-top:8px">Plate preview</div></div>
+      <div class="flex">
+        <div class="grow"><div class="lbl">Emirate</div><div class="field" style="padding:0 10px"><span>Dubai</span><svg class="svg sm"><use href="#i-next"/></svg></div></div>
+        <div style="width:70px"><div class="lbl">Code</div><div class="field" style="padding:0 10px"><span class="b">A</span></div></div>
+      </div>
+      <div><div class="lbl">Plate number</div><div class="field on"><span class="b" style="letter-spacing:.1em">12345</span></div></div>
+      <div><div class="lbl">Nickname</div><div class="field"><span>Family car</span></div></div>
+      <div class="card flex"><span class="grow">Set as default (recommended)</span><span class="toggle on"></span></div>
+      <button class="btn" style="margin-top:auto" data-go="vehicles">Save vehicle</button>
+    </div>
+  </div>
+<div class="screen view" id="v-settings">
+    <div class="notch"></div><div class="status"><span>9:41</span><span></span></div>
+    <div class="body">
+      <div class="navbar"><div class="iconbtn" data-go="account"><svg class="svg"><use href="#i-back"/></svg></div><h3>Settings</h3></div>
+      <div class="cap">Preferences</div>
+      <div class="card" style="padding:10px 12px"><div class="flex" style="margin-bottom:8px"><svg class="svg sm muted"><use href="#i-globe"/></svg><b>Language</b></div><div class="seg"><div class="on">English</div><div>العربية</div></div><div class="tiny muted" style="margin-top:6px">Arabic switches the app to right‑to‑left layout.</div></div>
+      <div class="card" style="padding:2px 12px">
+        <div class="listrow"><svg class="svg sm muted"><use href="#i-bell"/></svg><span class="grow">Push notifications</span><span class="toggle on"></span></div>
+        <div class="listrow"><svg class="svg sm muted"><use href="#i-clock"/></svg><span class="grow">Expiry reminder (15 min)</span><span class="toggle on"></span></div>
+        <div class="listrow"><svg class="svg sm muted"><use href="#i-moon"/></svg><span class="grow">Dark mode</span><span class="toggle"></span></div>
+      </div>
+      <div class="cap">Legal & account</div>
+      <div class="card" style="padding:2px 12px">
+        <div class="listrow"><svg class="svg sm muted"><use href="#i-shield"/></svg><span class="grow">Privacy policy</span><svg class="svg sm muted"><use href="#i-next"/></svg></div>
+        <div class="listrow"><svg class="svg sm muted"><use href="#i-doc"/></svg><span class="grow">Terms of service</span><svg class="svg sm muted"><use href="#i-next"/></svg></div>
+        <div class="listrow" style="color:var(--danger)"><svg class="svg sm"><use href="#i-trash"/></svg><span class="grow">Delete account</span></div>
+      </div>
+      <button class="btn line" style="color:var(--danger);margin-top:auto" data-go="login"><svg class="svg sm"><use href="#i-out"/></svg>Log out</button>
+      <div class="tiny muted center">ParkGo v1.0.0</div>
+    </div>
+  </div>
+<div class="screen view" id="v-help">
+    <div class="notch"></div><div class="status"><span>9:41</span><span></span></div>
+    <div class="body">
+      <div class="navbar"><div class="iconbtn" data-go="account"><svg class="svg"><use href="#i-back"/></svg></div><h3>Help & support</h3></div>
+      <div class="card" style="background:var(--ink);color:#fff;border:0"><b>Problem at a site?</b><div class="tiny" style="opacity:.75;margin:4px 0 10px">Report it and our site team is alerted instantly.</div><button class="btn sm" style="width:auto">Report an issue</button></div>
+      <div class="cap">Common issues</div>
+      <div class="card" style="padding:2px 12px">
+        <div class="listrow"><div class="ico r"><svg class="svg sm"><use href="#i-gate"/></svg></div><span class="grow b">Gate didn't open</span><svg class="svg sm muted"><use href="#i-next"/></svg></div>
+        <div class="listrow"><div class="ico y"><svg class="svg sm"><use href="#i-anpr"/></svg></div><span class="grow b">Plate not recognised</span><svg class="svg sm muted"><use href="#i-next"/></svg></div>
+        <div class="listrow"><div class="ico b"><svg class="svg sm"><use href="#i-card"/></svg></div><span class="grow b">Charged incorrectly</span><svg class="svg sm muted"><use href="#i-next"/></svg></div>
+        <div class="listrow"><div class="ico g"><svg class="svg sm"><use href="#i-qr"/></svg></div><span class="grow b">QR ticket not scanning</span><svg class="svg sm muted"><use href="#i-next"/></svg></div>
+      </div>
+      <div class="flex" style="margin-top:auto"><button class="btn line"><svg class="svg sm"><use href="#i-phone"/></svg>Call</button><button class="btn"><svg class="svg sm"><use href="#i-chat"/></svg>Live chat</button></div>
+    </div>
+  </div>
+</div></div>
+<div class="hint">ParkGo prototype · open this link on your phone for the full-screen app</div>
+<script>
+(function () {
+  // Scale the 300px-wide design to the phone width (or a comfortable size on desktop)
+  // The screens are designed at 282px wide; scale them to fit the real screen
+  function fit() {
+    var W = window.innerWidth, H = window.innerHeight, d = document.querySelector('.device');
+    if (W <= 600) {
+      var z = Math.min(Math.max(W / 282, 1), 1.6);
+      d.style.width = (W / z) + 'px'; d.style.height = (H / z) + 'px';
+      d.style.transform = 'scale(' + z + ')'; d.style.left = '0px'; d.style.top = '0px';
+    } else {
+      var z2 = Math.min((H - 70) / 620, 1.25);
+      d.style.width = '300px'; d.style.height = '620px';
+      d.style.transform = 'scale(' + z2 + ')';
+      d.style.left = ((W - 300 * z2) / 2) + 'px'; d.style.top = Math.max((H - 620 * z2) / 2 - 12, 8) + 'px';
+    }
+  }
+  fit(); addEventListener('resize', fit);
+
+  var stack = [];
+  function show(id, isBack) {
+    var next = document.getElementById('v-' + id);
+    if (!next) return false;
+    var cur = document.querySelector('.view.on');
+    if (cur === next) return true;
+    if (cur) cur.classList.remove('on', 'back');
+    next.classList.add('on');
+    next.classList.toggle('back', !!isBack);
+    return true;
+  }
+  function go(id) {
+    var cur = document.querySelector('.view.on');
+    var curId = cur && cur.id.slice(2);
+    // Going to a screen already in history counts as going back
+    var idx = stack.lastIndexOf(id);
+    if (idx >= 0) { stack = stack.slice(0, idx + 1); show(id, true); }
+    else { stack.push(id); show(id, false); }
+    history.pushState({ id: id }, '', '#' + id);
+  }
+  addEventListener('popstate', function (e) {
+    var id = (e.state && e.state.id) || 'splash';
+    var idx = stack.lastIndexOf(id);
+    if (idx >= 0) stack = stack.slice(0, idx + 1);
+    show(id, true);
+  });
+
+  document.addEventListener('click', function (e) {
+    var t = e.target;
+    var el = t.closest('[data-go]');
+    if (el && document.getElementById('v-' + el.dataset.go)) { e.preventDefault(); go(el.dataset.go); return; }
+
+    // Small interactions so the prototype feels real
+    var tg = t.closest('.toggle'); if (tg) { tg.classList.toggle('on'); return; }
+    var chip = t.closest('.chips .chip');
+    if (chip) { chip.parentNode.querySelectorAll('.chip').forEach(function (c) { c.classList.remove('on'); }); chip.classList.add('on'); return; }
+    var seg = t.closest('.seg > div');
+    if (seg) { seg.parentNode.querySelectorAll('div').forEach(function (c) { c.classList.remove('on'); }); seg.classList.add('on'); return; }
+    var day = t.closest('.cal i:not(.off)');
+    if (day) { day.parentNode.querySelectorAll('i').forEach(function (c) { c.classList.remove('sel'); }); day.classList.add('sel'); return; }
+    var radioCard = t.closest('.card');
+    if (radioCard && radioCard.querySelector(':scope > .radio, .listrow > .radio') === null && radioCard.querySelector('.radio')) {
+      var group = radioCard.parentNode;
+      group.querySelectorAll('.card').forEach(function (c) { var r = c.querySelector('.radio'); if (r) { r.classList.remove('on'); c.style.borderColor = ''; c.style.borderWidth = ''; } });
+      radioCard.querySelector('.radio').classList.add('on');
+      radioCard.style.border = '2px solid var(--brand)';
+      return;
+    }
+    var row = t.closest('.listrow');
+    if (row && row.querySelector('.radio')) {
+      row.parentNode.querySelectorAll('.radio').forEach(function (r) { r.classList.remove('on'); });
+      row.querySelector('.radio').classList.add('on');
+    }
+  });
+
+  // Fake QR pattern for the ticket
+  document.querySelectorAll('.qr').forEach(function (qr) {
+    var seed = 11;
+    function rnd() { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; }
+    function finder(r, c, R, C) { var y = r - R, x = c - C; if (y < 0 || y > 6 || x < 0 || x > 6) return null; return y === 0 || y === 6 || x === 0 || x === 6 || (y >= 2 && y <= 4 && x >= 2 && x <= 4); }
+    for (var r = 0; r < 21; r++) for (var c = 0; c < 21; c++) {
+      var on = finder(r, c, 0, 0); if (on === null) on = finder(r, c, 0, 14); if (on === null) on = finder(r, c, 14, 0);
+      if (on === null) on = (r === 7 || c === 7 || (r === 13 && c < 8) || (c === 13 && r < 8)) ? false : rnd() > 0.5;
+      var i = document.createElement('i'); if (!on) i.className = 'o'; qr.appendChild(i);
+    }
+  });
+
+  // Live timer on the "Parking in progress" screen
+  var secs = 1 * 3600 + 18 * 60 + 42;
+  setInterval(function () {
+    secs++;
+    var el = document.querySelector('#v-active .ring b');
+    if (!el) return;
+    var p = function (n) { return String(n).padStart(2, '0'); };
+    el.textContent = p(Math.floor(secs / 3600)) + ':' + p(Math.floor(secs / 60) % 60) + ':' + p(secs % 60);
+  }, 1000);
+
+  // Start: deep link (#screen) or splash → onboarding
+  var start = location.hash.slice(1);
+  if (start && document.getElementById('v-' + start)) { stack = [start]; show(start); history.replaceState({ id: start }, '', '#' + start); }
+  else {
+    stack = ['splash']; show('splash'); history.replaceState({ id: 'splash' }, '', '#splash');
+    setTimeout(function () { if (document.querySelector('.view.on').id === 'v-splash') go('onb1'); }, 1600);
+  }
+})();
+</script>
+</body>
+</html>

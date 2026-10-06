@@ -1,0 +1,191 @@
+// Builds index.html (the clickable ParkGo web app) from the screen designs in parking-app-screens.html.
+// Run:  node build-app.js
+const fs = require('fs');
+const path = require('path');
+
+const SRC = path.join(__dirname, 'parking-app-screens.html');
+const OUT = path.join(__dirname, 'index.html');
+const src = fs.readFileSync(SRC, 'utf8');
+
+const css = src.slice(src.indexOf('<style>') + 7, src.indexOf('</style>'));
+const symbolsStart = src.indexOf('<svg width="0" height="0"');
+const symbols = src.slice(symbolsStart, src.indexOf('</svg>\n\n<header') + 6);
+
+// Pull the inner .screen of every shot, keyed by shot id
+const views = [];
+const START = '<div class="shot" id="';
+for (let i = src.indexOf(START); i >= 0; i = src.indexOf(START, i + 1)) {
+  const id = src.slice(i + START.length, src.indexOf('"', i + START.length));
+  const sStart = src.indexOf('<div class="screen"', i);
+  // walk divs to find the matching close of .screen
+  let depth = 0, j = sStart;
+  const re = /<\/?div\b[^>]*>/g;
+  re.lastIndex = sStart;
+  let m;
+  while ((m = re.exec(src))) {
+    depth += m[0].startsWith('</') ? -1 : 1;
+    if (depth === 0) { j = re.lastIndex; break; }
+  }
+  const screen = src.slice(sStart, j).replace('<div class="screen"', `<div class="screen view" id="v-${id}"`);
+  views.push(screen);
+}
+
+const html = `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#1e9e5a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="ParkGo">
+<title>ParkGo</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+${css}
+/* ---------- app shell ---------- */
+html,body{height:100%}
+body{padding:0;margin:0;overflow:hidden;background:#0d1411;-webkit-tap-highlight-color:transparent;user-select:none}
+.app{position:fixed;inset:0;overflow:hidden}
+.device{position:absolute;left:0;top:0;width:300px;height:620px;transform-origin:0 0;border-radius:40px;background:#0d1411;padding:9px;box-shadow:0 30px 60px rgba(0,0,0,.5)}
+.device .screen{position:absolute;inset:9px;width:auto;height:auto}
+.view{display:none!important}
+.view.on{display:flex!important;animation:in .22s ease}
+@keyframes in{from{opacity:.4;transform:translateX(12px)}to{opacity:1;transform:none}}
+.view.back{animation:inb .22s ease}
+@keyframes inb{from{opacity:.4;transform:translateX(-12px)}to{opacity:1;transform:none}}
+[data-go],.chip,.toggle,.seg div,.card,.listrow{cursor:pointer}
+.hint{position:fixed;left:0;right:0;bottom:14px;text-align:center;color:#93a39a;font:500 12px Inter,sans-serif}
+/* Full-screen on phones: drop the frame and fake status bar/notch */
+@media (max-width:600px){
+  body{background:var(--bg)}
+  .device{border-radius:0;padding:0;box-shadow:none;background:var(--bg)}
+  .device .screen{inset:0;border-radius:0}
+  .notch{display:none}
+  .status{height:max(10px, env(safe-area-inset-top));padding:0;font-size:0}
+  .status *{display:none}
+  .hint{display:none}
+}
+</style>
+</head>
+<body>
+${symbols}
+<div class="app"><div class="device">
+${views.join('\n')}
+</div></div>
+<div class="hint">ParkGo prototype · open this link on your phone for the full-screen app</div>
+<script>
+(function () {
+  // Scale the 300px-wide design to the phone width (or a comfortable size on desktop)
+  // The screens are designed at 282px wide; scale them to fit the real screen
+  function fit() {
+    var W = window.innerWidth, H = window.innerHeight, d = document.querySelector('.device');
+    if (W <= 600) {
+      var z = Math.min(Math.max(W / 282, 1), 1.6);
+      d.style.width = (W / z) + 'px'; d.style.height = (H / z) + 'px';
+      d.style.transform = 'scale(' + z + ')'; d.style.left = '0px'; d.style.top = '0px';
+    } else {
+      var z2 = Math.min((H - 70) / 620, 1.25);
+      d.style.width = '300px'; d.style.height = '620px';
+      d.style.transform = 'scale(' + z2 + ')';
+      d.style.left = ((W - 300 * z2) / 2) + 'px'; d.style.top = Math.max((H - 620 * z2) / 2 - 12, 8) + 'px';
+    }
+  }
+  fit(); addEventListener('resize', fit);
+
+  var stack = [];
+  function show(id, isBack) {
+    var next = document.getElementById('v-' + id);
+    if (!next) return false;
+    var cur = document.querySelector('.view.on');
+    if (cur === next) return true;
+    if (cur) cur.classList.remove('on', 'back');
+    next.classList.add('on');
+    next.classList.toggle('back', !!isBack);
+    return true;
+  }
+  function go(id) {
+    var cur = document.querySelector('.view.on');
+    var curId = cur && cur.id.slice(2);
+    // Going to a screen already in history counts as going back
+    var idx = stack.lastIndexOf(id);
+    if (idx >= 0) { stack = stack.slice(0, idx + 1); show(id, true); }
+    else { stack.push(id); show(id, false); }
+    history.pushState({ id: id }, '', '#' + id);
+  }
+  addEventListener('popstate', function (e) {
+    var id = (e.state && e.state.id) || 'splash';
+    var idx = stack.lastIndexOf(id);
+    if (idx >= 0) stack = stack.slice(0, idx + 1);
+    show(id, true);
+  });
+
+  document.addEventListener('click', function (e) {
+    var t = e.target;
+    var el = t.closest('[data-go]');
+    if (el && document.getElementById('v-' + el.dataset.go)) { e.preventDefault(); go(el.dataset.go); return; }
+
+    // Small interactions so the prototype feels real
+    var tg = t.closest('.toggle'); if (tg) { tg.classList.toggle('on'); return; }
+    var chip = t.closest('.chips .chip');
+    if (chip) { chip.parentNode.querySelectorAll('.chip').forEach(function (c) { c.classList.remove('on'); }); chip.classList.add('on'); return; }
+    var seg = t.closest('.seg > div');
+    if (seg) { seg.parentNode.querySelectorAll('div').forEach(function (c) { c.classList.remove('on'); }); seg.classList.add('on'); return; }
+    var day = t.closest('.cal i:not(.off)');
+    if (day) { day.parentNode.querySelectorAll('i').forEach(function (c) { c.classList.remove('sel'); }); day.classList.add('sel'); return; }
+    var radioCard = t.closest('.card');
+    if (radioCard && radioCard.querySelector(':scope > .radio, .listrow > .radio') === null && radioCard.querySelector('.radio')) {
+      var group = radioCard.parentNode;
+      group.querySelectorAll('.card').forEach(function (c) { var r = c.querySelector('.radio'); if (r) { r.classList.remove('on'); c.style.borderColor = ''; c.style.borderWidth = ''; } });
+      radioCard.querySelector('.radio').classList.add('on');
+      radioCard.style.border = '2px solid var(--brand)';
+      return;
+    }
+    var row = t.closest('.listrow');
+    if (row && row.querySelector('.radio')) {
+      row.parentNode.querySelectorAll('.radio').forEach(function (r) { r.classList.remove('on'); });
+      row.querySelector('.radio').classList.add('on');
+    }
+  });
+
+  // Fake QR pattern for the ticket
+  document.querySelectorAll('.qr').forEach(function (qr) {
+    var seed = 11;
+    function rnd() { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; }
+    function finder(r, c, R, C) { var y = r - R, x = c - C; if (y < 0 || y > 6 || x < 0 || x > 6) return null; return y === 0 || y === 6 || x === 0 || x === 6 || (y >= 2 && y <= 4 && x >= 2 && x <= 4); }
+    for (var r = 0; r < 21; r++) for (var c = 0; c < 21; c++) {
+      var on = finder(r, c, 0, 0); if (on === null) on = finder(r, c, 0, 14); if (on === null) on = finder(r, c, 14, 0);
+      if (on === null) on = (r === 7 || c === 7 || (r === 13 && c < 8) || (c === 13 && r < 8)) ? false : rnd() > 0.5;
+      var i = document.createElement('i'); if (!on) i.className = 'o'; qr.appendChild(i);
+    }
+  });
+
+  // Live timer on the "Parking in progress" screen
+  var secs = 1 * 3600 + 18 * 60 + 42;
+  setInterval(function () {
+    secs++;
+    var el = document.querySelector('#v-active .ring b');
+    if (!el) return;
+    var p = function (n) { return String(n).padStart(2, '0'); };
+    el.textContent = p(Math.floor(secs / 3600)) + ':' + p(Math.floor(secs / 60) % 60) + ':' + p(secs % 60);
+  }, 1000);
+
+  // Start: deep link (#screen) or splash → onboarding
+  var start = location.hash.slice(1);
+  if (start && document.getElementById('v-' + start)) { stack = [start]; show(start); history.replaceState({ id: start }, '', '#' + start); }
+  else {
+    stack = ['splash']; show('splash'); history.replaceState({ id: 'splash' }, '', '#splash');
+    setTimeout(function () { if (document.querySelector('.view.on').id === 'v-splash') go('onb1'); }, 1600);
+  }
+})();
+</script>
+</body>
+</html>
+`;
+fs.writeFileSync(OUT, html, 'utf8');
+console.log('Built index.html with ' + views.length + ' screens');
