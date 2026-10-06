@@ -63,6 +63,13 @@ body{padding:0;margin:0;overflow:hidden;background:#0d1411;-webkit-tap-highlight
 .view.back{animation:inb .22s ease}
 @keyframes inb{from{opacity:.4;transform:translateX(-12px)}to{opacity:1;transform:none}}
 [data-go],.chip,.toggle,.seg div,.card,.listrow{cursor:pointer}
+/* Real Google Map layer (maps.js) */
+.gmap{position:absolute;left:0;top:0;transform-origin:0 0;z-index:0}
+.has-gmap > svg.map,.has-gmap > .spin,.has-gmap > .me,.has-gmap > div[style*="translate(-50%,-100%)"],.has-gmap > div[style*="translateX(-50%);z-index:2;background:#fff"]{display:none!important}
+.spin.gpin{position:relative;left:auto;top:auto;transform:scale(var(--z,1));transform-origin:50% 100%;margin-bottom:6px}
+.me.gme{position:relative;transform:scale(var(--z,1))}
+.gplace{display:flex;flex-direction:column;align-items:center;transform:scale(var(--z,1));transform-origin:50% 100%;font:700 10px Inter,sans-serif}
+.gplace span{background:#fff;border-radius:8px;padding:3px 8px;box-shadow:0 2px 6px rgba(0,0,0,.15);margin-top:-2px}
 .pager{position:fixed;left:0;right:0;bottom:12px;display:flex;align-items:center;justify-content:center;gap:14px;font:500 13px Inter,sans-serif;color:#cfe0d6}
 .pager button{width:44px;height:44px;border-radius:50%;border:0;background:#1e9e5a;color:#fff;font-size:22px;line-height:1;cursor:pointer;display:grid;place-items:center}
 .pager button:disabled{background:#2a3a32;color:#5b6b62;cursor:default}
@@ -91,6 +98,8 @@ ${views.join('\n')}
 </div></div>
 <div class="pager"><button id="prev" aria-label="Previous screen">‹</button><div class="t"><span id="ptitle"></span><span class="k">← → keys or mouse wheel · open on your phone for full screen</span></div><button id="next" aria-label="Next screen">›</button></div>
 <div class="toast" id="toast"></div>
+<script src="config.js"></script>
+<script src="maps.js"></script>
 <script>
 var ORDER = ${JSON.stringify(order)};
 (function () {
@@ -121,6 +130,7 @@ var ORDER = ${JSON.stringify(order)};
     next.classList.add('on');
     next.classList.toggle('back', !!isBack);
     updatePager(id);
+    if (window.ParkMaps) window.ParkMaps.onShow(id);
     return true;
   }
   var toastTimer;
@@ -162,6 +172,7 @@ var ORDER = ${JSON.stringify(order)};
     var dx = e.changedTouches[0].clientX - sx, dy = e.changedTouches[0].clientY - sy;
     if (Math.abs(dx) > 70 && Math.abs(dy) < 50) step(dx < 0 ? 1 : -1);
   }, { passive: true });
+  window.__parkgoGo = function (id) { go(id); };
   function go(id) {
     var cur = document.querySelector('.view.on');
     var curId = cur && cur.id.slice(2);
